@@ -1,0 +1,14 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/core-build/config.2.0.0.schema.json",
+  "version": "2.0",
+  "bundles": {
+    "sop-repository-web-part": {
+      "components": [
+        {
+          "entrypoint": "./lib/webparts/sopRepository/SopRepositoryWebPart.js",
+          "manifest": "./src/webparts/sopRepository/SopRepositoryWebPart.manifest.json"
+        }
+      ]
+    }
+  }
+}

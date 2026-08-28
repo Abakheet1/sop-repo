@@ -1,0 +1,40 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/spfx-build/package-solution.schema.json",
+  "solution": {
+    "name": "sop-repository-client-side-solution",
+    "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "version": "1.0.0.0",
+    "includeClientSideAssets": true,
+    "skipFeatureDeployment": true,
+    "isDomainIsolated": false,
+    "developer": {
+      "name": "Village of Mundelein IT",
+      "websiteUrl": "https://communityessentials.sharepoint.com",
+      "privacyUrl": "",
+      "termsOfUseUrl": "",
+      "mpnId": "Undefined-1.20.0"
+    },
+    "metadata": {
+      "shortDescription": {
+        "default": "IT SOP & Policy Documentation Repository"
+      },
+      "longDescription": {
+        "default": "Surfaces IT SOPs and policies from SharePoint with role-based filtering and gap detection"
+      },
+      "screenshotPaths": [],
+      "videoUrl": "",
+      "categories": []
+    },
+    "features": [
+      {
+        "title": "SOP Repository Feature",
+        "description": "The feature that activates elements for the SOP Repository.",
+        "id": "b2c3d4e5-f6a7-8901-bcde-f01234567891",
+        "version": "1.0.0.0"
+      }
+    ]
+  },
+  "paths": {
+    "zippedPackage": "solution/sop-repository.sppkg"
+  }
+}

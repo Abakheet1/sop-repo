@@ -1,0 +1,193 @@
+/* ============================================================
+   Document Preview Panel
+   ============================================================ */
+
+$border: #edebe9;
+$text-primary: #201f1e;
+$text-secondary: #605e5c;
+$text-muted: #a19f9d;
+$gap-color: #d83b01;
+
+/* ── Panel header ────────────────────────────────────────── */
+.panelHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: linear-gradient(135deg, #0078d4 0%, #004578 100%);
+  padding: 14px 16px;
+  width: 100%;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+.docTypeIcon {
+  font-size: 28px;
+  color: rgba(255, 255, 255, 0.9);
+  flex-shrink: 0;
+}
+
+.docTitle {
+  color: #fff;
+  font-weight: 600;
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.docProcess {
+  color: rgba(255, 255, 255, 0.7);
+  display: block;
+  margin-top: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.openFullLink {
+  color: rgba(255, 255, 255, 0.9) !important;
+  white-space: nowrap;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  text-decoration: none !important;
+
+  &:hover {
+    color: #fff !important;
+    text-decoration: underline !important;
+  }
+}
+
+/* ── Panel body ──────────────────────────────────────────── */
+.panelBody {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+  height: 100%;
+  min-height: 0;
+}
+
+/* ── Metadata strip ──────────────────────────────────────── */
+.metaStrip {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 20px;
+  border-bottom: 1px solid $border;
+  background: #faf9f8;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
+.metaItem {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.metaLabel {
+  color: $text-muted;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.metaValue {
+  color: $text-primary;
+  font-size: 12px;
+}
+
+.overdueText {
+  color: $gap-color;
+  font-weight: 600;
+}
+
+/* ── Viewer ──────────────────────────────────────────────── */
+.viewerContainer {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.viewerFrame {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+}
+
+.viewerLoading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  z-index: 1;
+}
+
+.viewerError {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 10px;
+  padding: 40px;
+  text-align: center;
+}
+
+.viewerErrorIcon {
+  font-size: 48px;
+  color: $text-muted;
+}
+
+.viewerErrorTitle {
+  font-weight: 600;
+  color: $text-primary;
+}
+
+.viewerErrorBody {
+  color: $text-secondary;
+}
+
+.downloadLink {
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* ── Badges (duplicated so panel is self-contained) ──────── */
+.typeBadge {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-weight: 600;
+  white-space: nowrap;
+  display: inline-block;
+}
+
+.badgeSop   { background: #dff6dd; color: #107c10; }
+.badgeJd    { background: #dce3ff; color: #0037da; }
+.badgeOther { background: #fff4ce; color: #835c00; }
+
+.statusBadge {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-weight: 600;
+  white-space: nowrap;
+  display: inline-block;
+}
+
+.statusApproved { background: #dff6dd; color: #107c10; }
+.statusDraft    { background: #fff4ce; color: #835c00; }
+.statusReview   { background: #eff6fc; color: #0078d4; }

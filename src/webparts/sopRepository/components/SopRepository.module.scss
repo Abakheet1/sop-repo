@@ -1,0 +1,36 @@
+.container {
+  padding: 16px 20px;
+  font-family: "Segoe UI", "Segoe UI Web (West European)", sans-serif;
+}
+
+.header {
+  color: #201f1e;
+  margin-bottom: 4px;
+}
+
+.search {
+  margin-bottom: 16px;
+  max-width: 400px;
+}
+
+.sectionHeader {
+  font-weight: 700;
+  color: #201f1e;
+  margin: 16px 0 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.gapHeader {
+  color: #d83b01;
+}
+
+.separator {
+  margin: 20px 0 8px;
+}
+
+.emptyState {
+  color: #797775;
+  font-style: italic;
+  padding: 8px 0;
+}

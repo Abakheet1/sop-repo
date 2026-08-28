@@ -1,0 +1,7 @@
+enhanced-directory/
+node_modules/
+release/
+sharepoint/
+*.sppkg
+.temp/
+temp/

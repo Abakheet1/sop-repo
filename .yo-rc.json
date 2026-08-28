@@ -1,0 +1,21 @@
+{
+  "@microsoft/generator-sharepoint": {
+    "plusBeta": false,
+    "isCreatingSolution": true,
+    "nodeVersion": "18.20.4",
+    "sdksVersions": {
+      "@microsoft/microsoft-graph-client": "3.0.7",
+      "isomorphic-fetch": "3.0.0"
+    },
+    "version": "1.20.0",
+    "libraryName": "sop-repository",
+    "libraryId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "environment": "spo",
+    "packageManager": "npm",
+    "solutionName": "sop-repository",
+    "solutionShortDescription": "Mundelein IT SOP & Policy Documentation Repository",
+    "skipFeatureDeployment": true,
+    "isDomainIsolated": false,
+    "componentType": "webpart"
+  }
+}

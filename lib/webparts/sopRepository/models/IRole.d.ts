@@ -1,0 +1,8 @@
+export interface IRole {
+    id: number;
+    title: string;
+    description: string;
+    department: string;
+    active: boolean;
+}
+//# sourceMappingURL=IRole.d.ts.map

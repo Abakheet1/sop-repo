@@ -1,0 +1,31 @@
+declare const styles: {
+    panelHeader: string;
+    docTypeIcon: string;
+    docTitle: string;
+    docProcess: string;
+    openFullLink: string;
+    panelBody: string;
+    metaStrip: string;
+    metaItem: string;
+    metaLabel: string;
+    metaValue: string;
+    overdueText: string;
+    viewerContainer: string;
+    viewerFrame: string;
+    viewerLoading: string;
+    viewerError: string;
+    viewerErrorIcon: string;
+    viewerErrorTitle: string;
+    viewerErrorBody: string;
+    downloadLink: string;
+    typeBadge: string;
+    badgeSop: string;
+    badgeJd: string;
+    badgeOther: string;
+    statusBadge: string;
+    statusApproved: string;
+    statusDraft: string;
+    statusReview: string;
+};
+export default styles;
+//# sourceMappingURL=DocumentPreviewPanel.module.scss.d.ts.map

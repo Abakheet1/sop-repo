@@ -1,0 +1,1 @@
+{"version":3,"file":"IProcess.d.ts","sourceRoot":"","sources":["../../../../src/webparts/sopRepository/models/IProcess.ts"],"names":[],"mappings":"AAAA,MAAM,WAAW,QAAQ;IACvB,EAAE,EAAE,MAAM,CAAC;IACX,KAAK,EAAE,MAAM,CAAC;IACd,kGAAkG;IAClG,UAAU,EAAE,MAAM,CAAC;IACnB;;;;OAIG;IACH,YAAY,EAAE,MAAM,CAAC;IACrB,YAAY,EAAE,MAAM,CAAC;CACtB"}
