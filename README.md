@@ -93,6 +93,26 @@ When making changes in GitHub Copilot, keep the following in mind:
 - Keep `sharepoint/solution/` artifacts aligned with the latest build when shipping updates.
 - If a new package is generated, review the package manifest and app details before deployment.
 
+## Common edit tasks
+
+Use this workflow when updating the web part:
+
+1. Identify the exact component or service that owns the behavior.
+2. Make the UI or logic change in the relevant TypeScript file.
+3. Update supporting models or services if the data contract changes.
+4. Validate with `gulp build` before packaging.
+5. Regenerate and review the packaged solution under `sharepoint/solution/` when needed.
+
+## Copilot handoff checklist
+
+When handing this repo to GitHub Copilot or another developer, make sure they know:
+
+- This is an SPFx project, not a plain React app.
+- The main application entry is `src/webparts/sopRepository/SopRepositoryWebPart.ts`.
+- Most UI updates belong in the components folder, while data logic belongs in services and hooks.
+- SharePoint packaging and deployment artifacts live in `sharepoint/solution/`.
+- Build validation should happen with the SPFx gulp commands before final deployment.
+
 ## License
 
 This project currently does not include an explicit license file. Add one if your organization requires a formal license before publishing externally.

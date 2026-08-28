@@ -1,7 +1,7 @@
 enhanced-directory/
 node_modules/
 release/
-sharepoint/
-*.sppkg
 .temp/
 temp/
+# Keep the SharePoint package and deployment files in version control.
+# Generated build output is still ignored below when appropriate.
