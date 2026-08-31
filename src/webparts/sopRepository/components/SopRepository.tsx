@@ -16,6 +16,7 @@ import {
 } from "@fluentui/react";
 import { ISopRepositoryProps } from "./ISopRepositoryProps";
 import { RoleSelector } from "./RoleSelector/RoleSelector";
+import { CurrentRoleCard } from "./CurrentRoleCard/CurrentRoleCard";
 import { SummaryBar } from "./SummaryBar/SummaryBar";
 import { SopCard } from "./SopCard/SopCard";
 import { GapCard } from "./GapCard/GapCard";
@@ -269,6 +270,13 @@ export const SopRepository: React.FC<ISopRepositoryProps> = (props) => {
           {/* Main content */}
           {!isLoading && !error && selectedRole && (
             <Stack tokens={{ childrenGap: 0 }}>
+              {/* Current role context — orients the user to whose documentation they're viewing before the counts/documents below */}
+              <CurrentRoleCard
+                role={roles.find((r) => r.title === selectedRole)}
+                roleTitle={selectedRole}
+                isAutoDetected={roleAutoDetected && !defaultRole}
+              />
+
               {/* Summary bar */}
               <SummaryBar
                 sopCount={filteredSopDocuments.length}

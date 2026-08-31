@@ -1,0 +1,57 @@
+.card {
+  background: #fff;
+  border: 1px solid #edebe9;
+  border-radius: 8px;
+  padding: 16px 18px;
+  margin-bottom: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.label {
+  display: block;
+  color: #797775;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.titleRow {
+  margin-bottom: 8px;
+}
+
+.avatar {
+  position: relative;
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #0078d4;
+  color: #fff;
+  font-weight: 600;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.autoDot {
+  position: absolute;
+  bottom: -1px;
+  right: -1px;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: #107c10;
+  border: 2px solid #fff;
+}
+
+.title {
+  font-weight: 600;
+  color: #201f1e;
+}
+
+.description {
+  color: #605e5c;
+  line-height: 1.5;
+}
