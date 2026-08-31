@@ -1,8 +1,8 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/spfx-build/package-solution.schema.json",
   "solution": {
-    "name": "sop-repository-client-side-solution",
-    "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "name": "role-responsibility-documentation-client-side-solution",
+    "id": "ed3767e9-6819-453c-b8c1-b979758b0084",
     "version": "1.1.0.0",
     "includeClientSideAssets": true,
     "skipFeatureDeployment": true,
@@ -29,12 +29,12 @@
       {
         "title": "Role & Responsibility Documentation Feature",
         "description": "The feature that activates elements for the Role & Responsibility Documentation web part.",
-        "id": "b2c3d4e5-f6a7-8901-bcde-f01234567891",
+        "id": "b18b5702-368b-4646-b4c5-fe47ebda42d3",
         "version": "1.1.0.0"
       }
     ]
   },
   "paths": {
-    "zippedPackage": "solution/sop-repository.sppkg"
+    "zippedPackage": "solution/role-responsibility-documentation.sppkg"
   }
 }
