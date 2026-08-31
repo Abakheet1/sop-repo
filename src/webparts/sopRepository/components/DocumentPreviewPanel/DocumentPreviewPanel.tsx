@@ -148,7 +148,7 @@ export const DocumentPreviewPanel: React.FC<IDocumentPreviewPanelProps> = ({ doc
             <Text variant="tiny" className={styles.metaLabel}>LAST UPDATED</Text>
             <Text variant="small" className={`${styles.metaValue} ${isOverdue ? styles.overdueText : ""}`}>
               {isOverdue && <Icon iconName="Warning" style={{ fontSize: 11, marginRight: 4 }} />}
-              {formatDate(doc.reviewDate)}
+              {formatDate(doc.reviewDate || doc.modified)}
             </Text>
           </div>
           <Separator vertical styles={{ root: { height: 32 } }} />

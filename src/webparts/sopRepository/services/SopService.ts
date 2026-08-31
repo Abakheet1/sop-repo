@@ -221,6 +221,11 @@ export class SopService {
     //
     // Role matching is done client-side (see _roleMatches) rather than via an
     // OData $filter — see getProcessesByRole for why.
+    //
+    // "Modified" is a built-in SharePoint column (always present, no schema
+    // lookup needed) that's automatically updated whenever the file changes —
+    // unlike the manually-entered Review Date column, it's never blank, so
+    // it's used as the fallback display date when Review Date hasn't been set.
     const items = await this._sp.web
       .lists.getByTitle(listTitle)
       .items.select(
@@ -233,7 +238,8 @@ export class SopService {
         reviewDateField,
         FIELDS.LIB_FILE_REF,
         FIELDS.LIB_ENCODED_ABS_URL,
-        FIELDS.LIB_FILE_LEAF_REF
+        FIELDS.LIB_FILE_LEAF_REF,
+        "Modified"
       )
       .expand(processField)
       .top(2000)();
@@ -252,6 +258,7 @@ export class SopService {
         documentType: item[documentTypeField] || "",
         status: item[statusField] || "",
         reviewDate: item[reviewDateField] || "",
+        modified: item.Modified || "",
         fileUrl: item[FIELDS.LIB_ENCODED_ABS_URL] || item[FIELDS.LIB_FILE_REF] || "",
       }));
   }

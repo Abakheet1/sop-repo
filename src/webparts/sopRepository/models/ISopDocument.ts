@@ -11,6 +11,8 @@ export interface ISopDocument {
   status: string;
   /** ISO date string or empty */
   reviewDate: string;
+  /** SharePoint's built-in Modified date (ISO string) — always populated for a real file, used as a fallback display date when reviewDate hasn't been manually entered */
+  modified: string;
   /** Absolute URL to open the document */
   fileUrl: string;
 }

@@ -10,6 +10,13 @@ export interface ISopCardProps {
   onSelectDocument?: (doc: ISopDocument) => void;
 }
 
+/** The date actually shown to the user: the manually-curated Review Date when
+ * set, otherwise SharePoint's built-in Modified date (always populated) so a
+ * "Last Updated" date is visible even when Review Date was never filled in. */
+function getDisplayDate(doc: ISopDocument): string {
+  return doc.reviewDate || doc.modified || "";
+}
+
 export const SopCard: React.FC<ISopCardProps> = ({ process, onSelectDocument }) => {
   const sopDocs = process.matchedDocuments.filter((d) => d.documentType === "SOP");
   const jdDocs = process.matchedDocuments.filter((d) => d.documentType === "Job Description");
@@ -38,40 +45,57 @@ export const SopCard: React.FC<ISopCardProps> = ({ process, onSelectDocument }) 
         )}
 
         {/* Matched SOP documents */}
-        {sopDocs.map((doc) => (
-          <Stack key={doc.id} horizontal verticalAlign="center" tokens={{ childrenGap: 6 }} className={styles.docRow}>
-            <Icon iconName="PageList" className={styles.sopIcon} />
-            <Link href={doc.fileUrl} target="_blank" onClick={handleDocClick(doc)} className={styles.docLink}>
-              {doc.title}
-            </Link>
-            {doc.reviewDate && (
-              <TooltipHost content={`Last Updated Date: ${new Date(doc.reviewDate).toLocaleDateString()}`}>
-                <Icon iconName="Calendar" className={styles.calIcon} />
-              </TooltipHost>
-            )}
-            {doc.status && (
-              <span className={`${styles.statusPill} ${doc.status === "Approved" ? styles.approved : styles.draft}`}>
-                {doc.status}
-              </span>
-            )}
-          </Stack>
-        ))}
+        {sopDocs.map((doc) => {
+          const displayDate = getDisplayDate(doc);
+          return (
+            <Stack key={doc.id} tokens={{ childrenGap: 2 }} className={styles.docRow}>
+              <Stack horizontal verticalAlign="center" tokens={{ childrenGap: 6 }}>
+                <Icon iconName="PageList" className={styles.sopIcon} />
+                <Link href={doc.fileUrl} target="_blank" onClick={handleDocClick(doc)} className={styles.docLink}>
+                  {doc.title}
+                </Link>
+                <span className={`${styles.typeBadge} ${styles.typeSop}`}>SOP</span>
+                {doc.status && (
+                  <span className={`${styles.statusPill} ${doc.status === "Approved" ? styles.approved : styles.draft}`}>
+                    {doc.status}
+                  </span>
+                )}
+              </Stack>
+              {displayDate && (
+                <TooltipHost content={doc.reviewDate ? "Manually set on the document" : "From SharePoint's file activity"}>
+                  <Text variant="small" className={styles.dateText}>
+                    <Icon iconName="Calendar" className={styles.calIcon} /> Last Updated Date: {new Date(displayDate).toLocaleDateString()}
+                  </Text>
+                </TooltipHost>
+              )}
+            </Stack>
+          );
+        })}
 
         {/* Matched Job Description documents */}
-        {jdDocs.map((doc) => (
-          <Stack key={doc.id} horizontal verticalAlign="center" tokens={{ childrenGap: 6 }} className={styles.docRow}>
-            <Icon iconName="ContactCard" className={styles.jdIcon} />
-            <Link href={doc.fileUrl} target="_blank" onClick={handleDocClick(doc)} className={styles.docLink}>
-              {doc.title}
-            </Link>
-            {doc.reviewDate && (
-              <TooltipHost content={`Last Updated Date: ${new Date(doc.reviewDate).toLocaleDateString()}`}>
-                <Icon iconName="Calendar" className={styles.calIcon} />
-              </TooltipHost>
-            )}
-          </Stack>
-        ))}
+        {jdDocs.map((doc) => {
+          const displayDate = getDisplayDate(doc);
+          return (
+            <Stack key={doc.id} tokens={{ childrenGap: 2 }} className={styles.docRow}>
+              <Stack horizontal verticalAlign="center" tokens={{ childrenGap: 6 }}>
+                <Icon iconName="ContactCard" className={styles.jdIcon} />
+                <Link href={doc.fileUrl} target="_blank" onClick={handleDocClick(doc)} className={styles.docLink}>
+                  {doc.title}
+                </Link>
+                <span className={`${styles.typeBadge} ${styles.typeJd}`}>Job Description</span>
+              </Stack>
+              {displayDate && (
+                <TooltipHost content={doc.reviewDate ? "Manually set on the document" : "From SharePoint's file activity"}>
+                  <Text variant="small" className={styles.dateText}>
+                    <Icon iconName="Calendar" className={styles.calIcon} /> Last Updated Date: {new Date(displayDate).toLocaleDateString()}
+                  </Text>
+                </TooltipHost>
+              )}
+            </Stack>
+          );
+        })}
       </Stack>
     </div>
   );
 };
+

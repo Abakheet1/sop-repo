@@ -42,8 +42,35 @@
 
 .calIcon {
   color: #605e5c;
-  font-size: 14px;
+  font-size: 12px;
+  vertical-align: middle;
+  margin-right: 2px;
+}
+
+.dateText {
+  color: #605e5c;
+  padding-left: 20px;
   cursor: help;
+}
+
+.typeBadge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.typeSop {
+  background: #deecf9;
+  color: #0078d4;
+}
+
+.typeJd {
+  background: #dff6dd;
+  color: #107c10;
 }
 
 .statusPill {
