@@ -149,7 +149,22 @@ export const SopRepository: React.FC<ISopRepositoryProps> = (props) => {
             }}
             detectedRole={jobTitle && !defaultRole ? jobTitle : null}
             selectedDepartment={selectedDepartment}
-            onDepartmentChange={setSelectedDepartment}
+            onDepartmentChange={(department) => {
+              setSelectedDepartment(department);
+              // If the currently selected role doesn't belong to the newly
+              // chosen department, clear it instead of leaving the Role
+              // dropdown showing a blank placeholder while stale data for
+              // the old role stays on screen.
+              if (department && selectedRole) {
+                const roleStillValid = roles.some(
+                  (r) => r.title === selectedRole && r.department === department
+                );
+                if (!roleStillValid) {
+                  setSelectedRole(null);
+                  setSearchQuery("");
+                }
+              }
+            }}
           />
 
           {!isLoading && !error && selectedRole && (
