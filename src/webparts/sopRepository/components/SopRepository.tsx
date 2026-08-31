@@ -11,6 +11,8 @@ import {
   Separator,
   Link,
   Icon,
+  Dropdown,
+  IDropdownOption,
 } from "@fluentui/react";
 import { ISopRepositoryProps } from "./ISopRepositoryProps";
 import { RoleSelector } from "./RoleSelector/RoleSelector";
@@ -23,6 +25,9 @@ import { useSopData } from "../hooks/useSopData";
 import { IProcessViewModel } from "../models/IProcessViewModel";
 import { ISopDocument } from "../models/ISopDocument";
 import styles from "./SopRepository.module.scss";
+
+const ALL_TYPES_KEY = "__all_types__";
+const ALL_STATUSES_KEY = "__all_statuses__";
 
 export const SopRepository: React.FC<ISopRepositoryProps> = (props) => {
   const { context, service, showGaps, defaultRole } = props;
@@ -41,6 +46,10 @@ export const SopRepository: React.FC<ISopRepositoryProps> = (props) => {
 
   // Keyword search state
   const [searchQuery, setSearchQuery] = useState<string>("");
+
+  // Document Type / Status filters — narrow which SOP/Job Description documents are shown
+  const [selectedDocumentType, setSelectedDocumentType] = useState<string | null>(null);
+  const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
 
   // Document selected for in-page preview (opens DocumentPreviewPanel)
   const [selectedDocument, setSelectedDocument] = useState<ISopDocument | null>(null);
@@ -86,8 +95,41 @@ export const SopRepository: React.FC<ISopRepositoryProps> = (props) => {
     );
   };
 
-  const filteredDocumented = filterProcesses(documentedProcesses);
+  // Narrows documents to those matching the selected Document Type / Status filters
+  const applyDocFilters = (docs: ISopDocument[]): ISopDocument[] =>
+    docs.filter(
+      (d) =>
+        (!selectedDocumentType || d.documentType === selectedDocumentType) &&
+        (!selectedStatus || d.status === selectedStatus)
+    );
+
+  // Applies the Document Type / Status filters to documented processes, hiding
+  // processes whose documents don't match. A process linked only via the Process
+  // list's bare "Document Link" (no matched library documents) has no type/status
+  // to filter on, so it's hidden once a filter is active.
+  const filterByDocument = (list: IProcessViewModel[]): IProcessViewModel[] => {
+    if (!selectedDocumentType && !selectedStatus) return list;
+    return list
+      .map((p) => ({ ...p, matchedDocuments: applyDocFilters(p.matchedDocuments) }))
+      .filter((p) => p.matchedDocuments.length > 0);
+  };
+
+  const filteredDocumented = filterByDocument(filterProcesses(documentedProcesses));
   const filteredGaps = filterProcesses(gapProcesses);
+  const filteredSopDocuments = applyDocFilters(sopDocuments);
+  const filteredJobDescriptions = applyDocFilters(jobDescriptions);
+
+  const documentTypeOptions: IDropdownOption[] = [
+    { key: ALL_TYPES_KEY, text: "All Types" },
+    { key: "SOP", text: "SOP" },
+    { key: "Job Description", text: "Job Description" },
+  ];
+
+  const statusOptions: IDropdownOption[] = [
+    { key: ALL_STATUSES_KEY, text: "All Statuses" },
+    { key: "Approved", text: "Approved" },
+    { key: "Draft", text: "Draft" },
+  ];
 
   return (
     <div className={styles.container}>
@@ -118,6 +160,28 @@ export const SopRepository: React.FC<ISopRepositoryProps> = (props) => {
                 onChange={(_, val) => setSearchQuery(val || "")}
                 onClear={() => setSearchQuery("")}
                 className={styles.search}
+              />
+
+              <Dropdown
+                label="Document Type"
+                options={documentTypeOptions}
+                selectedKey={selectedDocumentType || ALL_TYPES_KEY}
+                onChange={(_, option) => {
+                  if (!option) return;
+                  setSelectedDocumentType(option.key === ALL_TYPES_KEY ? null : String(option.key));
+                }}
+                styles={{ root: { width: "100%" } }}
+              />
+
+              <Dropdown
+                label="Status"
+                options={statusOptions}
+                selectedKey={selectedStatus || ALL_STATUSES_KEY}
+                onChange={(_, option) => {
+                  if (!option) return;
+                  setSelectedStatus(option.key === ALL_STATUSES_KEY ? null : String(option.key));
+                }}
+                styles={{ root: { width: "100%" } }}
               />
 
               {/* Direct access to the current role's job description(s) */}
@@ -176,8 +240,8 @@ export const SopRepository: React.FC<ISopRepositoryProps> = (props) => {
             <Stack tokens={{ childrenGap: 0 }}>
               {/* Summary bar */}
               <SummaryBar
-                sopCount={sopDocuments.length}
-                jdCount={jobDescriptions.length}
+                sopCount={filteredSopDocuments.length}
+                jdCount={filteredJobDescriptions.length}
                 gapCount={showGaps ? gapProcesses.length : 0}
               />
 
@@ -187,8 +251,8 @@ export const SopRepository: React.FC<ISopRepositoryProps> = (props) => {
               </Text>
               {filteredDocumented.length === 0 ? (
                 <Text variant="medium" className={styles.emptyState}>
-                  {searchQuery
-                    ? "No documented processes match your search."
+                  {searchQuery || selectedDocumentType || selectedStatus
+                    ? "No documented processes match your search or filters."
                     : "No documented processes were found for this role."}
                 </Text>
               ) : (
