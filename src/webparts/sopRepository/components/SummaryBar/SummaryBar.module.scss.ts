@@ -1,11 +1,11 @@
 
 require("./SummaryBar.module.css");
 const styles = {
-  summaryBar: 'summaryBar_62ba3b65',
-  badge: 'badge_62ba3b65',
-  sopBadge: 'sopBadge_62ba3b65',
-  jdBadge: 'jdBadge_62ba3b65',
-  gapBadge: 'gapBadge_62ba3b65'
+  summaryBar: 'summaryBar_59204781',
+  badge: 'badge_59204781',
+  sopBadge: 'sopBadge_59204781',
+  jdBadge: 'jdBadge_59204781',
+  gapBadge: 'gapBadge_59204781'
 };
 
 export default styles;

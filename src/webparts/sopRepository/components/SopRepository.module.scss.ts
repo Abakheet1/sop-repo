@@ -1,20 +1,20 @@
 
 require("./SopRepository.module.css");
 const styles = {
-  container: 'container_99faf9b6',
-  header: 'header_99faf9b6',
-  layout: 'layout_99faf9b6',
-  sidebar: 'sidebar_99faf9b6',
-  content: 'content_99faf9b6',
-  search: 'search_99faf9b6',
-  jdQuickAccess: 'jdQuickAccess_99faf9b6',
-  jdQuickAccessHeader: 'jdQuickAccessHeader_99faf9b6',
-  jdQuickAccessLink: 'jdQuickAccessLink_99faf9b6',
-  sectionHeader: 'sectionHeader_99faf9b6',
-  gapHeader: 'gapHeader_99faf9b6',
-  gapHeaderIcon: 'gapHeaderIcon_99faf9b6',
-  separator: 'separator_99faf9b6',
-  emptyState: 'emptyState_99faf9b6'
+  container: 'container_850d0b32',
+  header: 'header_850d0b32',
+  layout: 'layout_850d0b32',
+  sidebar: 'sidebar_850d0b32',
+  content: 'content_850d0b32',
+  search: 'search_850d0b32',
+  jdQuickAccess: 'jdQuickAccess_850d0b32',
+  jdQuickAccessHeader: 'jdQuickAccessHeader_850d0b32',
+  jdQuickAccessLink: 'jdQuickAccessLink_850d0b32',
+  sectionHeader: 'sectionHeader_850d0b32',
+  gapHeader: 'gapHeader_850d0b32',
+  gapHeaderIcon: 'gapHeaderIcon_850d0b32',
+  separator: 'separator_850d0b32',
+  emptyState: 'emptyState_850d0b32'
 };
 
 export default styles;

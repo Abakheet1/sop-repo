@@ -10,5 +10,9 @@
         }
       ]
     }
+  },
+  "externals": {},
+  "localizedResources": {
+    "SopRepositoryWebPartStrings": "lib/webparts/sopRepository/loc/{locale}.js"
   }
 }

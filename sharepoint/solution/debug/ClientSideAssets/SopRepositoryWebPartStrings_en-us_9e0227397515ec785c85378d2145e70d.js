@@ -1,0 +1,28 @@
+define([], function () {
+  return {
+    PropertyPaneDescription: "Configure the Role & Responsibility Documentation web part.",
+    DataGroupName: "Data Sources",
+    DisplayGroupName: "Display Options",
+    SopSiteUrlLabel: "Documentation Site URL",
+    LibraryNameLabel: "Document Library Name",
+    ProcessListNameLabel: "Process List Name",
+    RolesListNameLabel: "Roles List Name",
+    ShowGapsLabel: "Show Undocumented Processes",
+    DefaultRoleLabel: "Default Role Override",
+    LoadingLabel: "Loading documentation...",
+    ErrorLabel: "We were unable to load documentation at this time.",
+    NoRoleDetectedLabel: "We could not automatically determine your role. Please select one below.",
+    SelectRoleLabel: "Select a role",
+    SelectDepartmentLabel: "Select a department",
+    AllDepartmentsLabel: "All Departments",
+    DocumentedSectionTitle: "Documented Processes",
+    GapsSectionTitle: "Undocumented Processes",
+    JobDescriptionsSectionTitle: "Your Job Description",
+    SearchPlaceholder: "Search by process, SOP, or job description...",
+    StatusApproved: "Approved",
+    StatusDraft: "Draft",
+    ReviewDateLabel: "Last Updated Date",
+    NoDocumentsLabel: "No documented processes were found for this role.",
+    NoGapsLabel: "All processes are documented for this role.",
+  };
+});
