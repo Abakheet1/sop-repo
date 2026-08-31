@@ -12,6 +12,7 @@ import {
   Icon,
   Dropdown,
   IDropdownOption,
+  ActionButton,
 } from "@fluentui/react";
 import { ISopRepositoryProps } from "./ISopRepositoryProps";
 import { RoleSelector } from "./RoleSelector/RoleSelector";
@@ -126,6 +127,17 @@ export const SopRepository: React.FC<ISopRepositoryProps> = (props) => {
   const filteredSopDocuments = applyDocFilters(sopDocuments);
   const filteredJobDescriptions = applyDocFilters(jobDescriptions);
 
+  // Whether any of the searchable/narrowing filters (as opposed to the
+  // Department/Role selection, which picks *whose* documentation to view)
+  // are currently active — drives whether the Clear Filters button is shown.
+  const hasActiveFilters = Boolean(searchQuery || selectedDocumentType || selectedStatus);
+
+  const clearFilters = (): void => {
+    setSearchQuery("");
+    setSelectedDocumentType(null);
+    setSelectedStatus(null);
+  };
+
   const documentTypeOptions: IDropdownOption[] = [
     { key: ALL_TYPES_KEY, text: "All Types" },
     { key: "SOP", text: "SOP" },
@@ -210,6 +222,16 @@ export const SopRepository: React.FC<ISopRepositoryProps> = (props) => {
                   }}
                   styles={{ root: { width: "100%" } }}
                 />
+
+                {hasActiveFilters && (
+                  <ActionButton
+                    iconProps={{ iconName: "ClearFilter" }}
+                    onClick={clearFilters}
+                    className={styles.clearFiltersBtn}
+                  >
+                    Clear Filters
+                  </ActionButton>
+                )}
               </Stack>
             </>
           )}
