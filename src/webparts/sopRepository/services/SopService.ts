@@ -2,6 +2,7 @@ import { WebPartContext } from "@microsoft/sp-webpart-base";
 import { spfi, SPFx } from "@pnp/sp";
 import "@pnp/sp/webs";
 import "@pnp/sp/lists";
+import "@pnp/sp/fields";
 import "@pnp/sp/items";
 import "@pnp/sp/files";
 import "@pnp/sp/folders";
@@ -10,19 +11,19 @@ import { IProcess } from "../models/IProcess";
 import { ISopDocument } from "../models/ISopDocument";
 
 /**
- * Internal REST API field name constants.
- *
- * IMPORTANT: If queries return empty results for role-filtered calls, verify these
- * internal names against your tenant by calling:
- *   GET https://communityessentials.sharepoint.com/sites/SOPProcessManagement/_api/web/lists/getbytitle('Process')/fields?$select=InternalName,Title
- *
- * SharePoint encodes column display names: spaces → _x0020_, ( → _x0028_, ) → _x0029_
- * e.g. "Role (Choice)" → "Role_x0020__x0028_Choice_x0029_"
+ * Best-guess internal REST API field names, used only as a fallback when the
+ * live schema lookup (see resolveFieldName below) fails for some reason (e.g.
+ * a transient permissions/network error). The actual internal name used at
+ * runtime is always resolved dynamically from each list's field schema by
+ * display name, because SharePoint's automatic encoding of display names
+ * (spaces → _x0020_, parentheses → _x0028_/_x0029_, etc.) has proven
+ * unreliable to predict by hand across tenants/columns — hardcoding a single
+ * guess here previously caused "field does not exist" runtime errors.
  */
 const FIELDS = {
   // Process list columns
   ROLE_CHOICE: "Role_x0020__x0028_Choice_x0029_",   // Display: "Role (Choice)"
-  DOCUMENT_LINK: "DocumentLink",                      // Display: "Document Link" (URL field, internal name confirmed from schema)
+  DOCUMENT_LINK: "DocumentLink",                      // Display: "Document Link"
   DOCUMENT_TYPE: "DocumentType",                      // Display: "Document Type"
 
   // SOP & Process Library columns
@@ -38,6 +39,18 @@ const FIELDS = {
   ROLES_DESCRIPTION: "Description",
 } as const;
 
+/** Display names used to resolve the real internal name from each list's schema. */
+const DISPLAY_NAMES = {
+  ROLE_CHOICE: "Role (Choice)",
+  DOCUMENT_LINK: "Document Link",
+  DOCUMENT_TYPE: "Document Type",
+  LIB_STATUS: "Status",
+  LIB_REVIEW_DATE: "Review Date",
+  ROLES_DEPARTMENT: "Department",
+  ROLES_ACTIVE: "Active",
+  ROLES_DESCRIPTION: "Description",
+} as const;
+
 export interface ISopServiceConfig {
   sopSiteUrl: string;
   libraryName: string;
@@ -48,6 +61,7 @@ export interface ISopServiceConfig {
 export class SopService {
   private _config: ISopServiceConfig;
   private _sp: ReturnType<typeof spfi>;
+  private _fieldNameCache = new Map<string, string>();
 
   constructor(context: WebPartContext, config: ISopServiceConfig) {
     this._config = config;
@@ -58,28 +72,65 @@ export class SopService {
   /** Reconfigure if property pane values change */
   public updateConfig(config: ISopServiceConfig): void {
     this._config = config;
+    this._fieldNameCache.clear();
+  }
+
+  /**
+   * Resolves a column's true REST internal name by looking up its display
+   * name in the list's field schema, instead of guessing SharePoint's
+   * automatic encoding (spaces → _x0020_, parentheses → _x0028_/_x0029_,
+   * etc.), which has proven unreliable across tenants/columns. Falls back
+   * to the hardcoded best-guess name (and, failing that, the display name
+   * itself) if the schema lookup fails for any reason.
+   */
+  private async _resolveFieldName(
+    listTitle: string,
+    displayName: string,
+    fallback: string
+  ): Promise<string> {
+    const cacheKey = `${listTitle}::${displayName}`;
+    const cached = this._fieldNameCache.get(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
+    try {
+      const field: { InternalName?: string } = await this._sp.web
+        .lists.getByTitle(listTitle)
+        .fields.getByTitle(displayName)
+        .select("InternalName")();
+      const internalName = field.InternalName || fallback;
+      this._fieldNameCache.set(cacheKey, internalName);
+      return internalName;
+    } catch {
+      // Schema lookup failed (e.g. display name mismatch, permissions) —
+      // fall back to the best-guess name so the caller can still try.
+      this._fieldNameCache.set(cacheKey, fallback);
+      return fallback;
+    }
   }
 
   /** Returns all active roles from the Roles list */
   public async getRoles(): Promise<IRole[]> {
+    const listTitle = this._config.rolesListName;
+    const [descriptionField, departmentField, activeField] = await Promise.all([
+      this._resolveFieldName(listTitle, DISPLAY_NAMES.ROLES_DESCRIPTION, FIELDS.ROLES_DESCRIPTION),
+      this._resolveFieldName(listTitle, DISPLAY_NAMES.ROLES_DEPARTMENT, FIELDS.ROLES_DEPARTMENT),
+      this._resolveFieldName(listTitle, DISPLAY_NAMES.ROLES_ACTIVE, FIELDS.ROLES_ACTIVE),
+    ]);
+
     const items = await this._sp.web
-      .lists.getByTitle(this._config.rolesListName)
-      .items.select(
-        "ID",
-        "Title",
-        FIELDS.ROLES_DESCRIPTION,
-        FIELDS.ROLES_DEPARTMENT,
-        FIELDS.ROLES_ACTIVE
-      )
-      .filter(`${FIELDS.ROLES_ACTIVE} eq 1`)
+      .lists.getByTitle(listTitle)
+      .items.select("ID", "Title", descriptionField, departmentField, activeField)
+      .filter(`${activeField} eq 1`)
       .orderBy("Title", true)();
 
     return items.map((item: any) => ({
       id: item.ID,
       title: item.Title || "",
-      description: item[FIELDS.ROLES_DESCRIPTION] || "",
-      department: item[FIELDS.ROLES_DEPARTMENT] || "",
-      active: !!item[FIELDS.ROLES_ACTIVE],
+      description: item[descriptionField] || "",
+      department: item[departmentField] || "",
+      active: !!item[activeField],
     }));
   }
 
@@ -91,28 +142,25 @@ export class SopService {
    */
   public async getProcessesByRole(role: string): Promise<IProcess[]> {
     const normalizedRole = role.trim();
+    const listTitle = this._config.processListName;
+    const [roleField, documentLinkField, documentTypeField] = await Promise.all([
+      this._resolveFieldName(listTitle, DISPLAY_NAMES.ROLE_CHOICE, FIELDS.ROLE_CHOICE),
+      this._resolveFieldName(listTitle, DISPLAY_NAMES.DOCUMENT_LINK, FIELDS.DOCUMENT_LINK),
+      this._resolveFieldName(listTitle, DISPLAY_NAMES.DOCUMENT_TYPE, FIELDS.DOCUMENT_TYPE),
+    ]);
 
-    // Filter on the REST API using the exact encoded field name.
-    // We also fetch all and filter client-side as a fallback in case the
-    // internal name differs on this tenant.
     const items = await this._sp.web
-      .lists.getByTitle(this._config.processListName)
-      .items.select(
-        "ID",
-        "Title",
-        FIELDS.ROLE_CHOICE,
-        FIELDS.DOCUMENT_LINK,
-        FIELDS.DOCUMENT_TYPE
-      )
-      .filter(`${FIELDS.ROLE_CHOICE} eq '${normalizedRole.replace(/'/g, "''")}'`)
+      .lists.getByTitle(listTitle)
+      .items.select("ID", "Title", roleField, documentLinkField, documentTypeField)
+      .filter(`${roleField} eq '${normalizedRole.replace(/'/g, "''")}'`)
       .top(500)();
 
     return items.map((item: any) => ({
       id: item.ID,
       title: item.Title || "",
-      roleChoice: item[FIELDS.ROLE_CHOICE] || "",
-      documentLink: item[FIELDS.DOCUMENT_LINK]?.Url || item[FIELDS.DOCUMENT_LINK] || "",
-      documentType: item[FIELDS.DOCUMENT_TYPE] || "",
+      roleChoice: item[roleField] || "",
+      documentLink: item[documentLinkField]?.Url || item[documentLinkField] || "",
+      documentType: item[documentTypeField] || "",
     }));
   }
 
@@ -122,6 +170,15 @@ export class SopService {
    */
   public async getDocumentsByRole(role: string): Promise<ISopDocument[]> {
     const normalizedRole = role.trim();
+    const listTitle = this._config.libraryName;
+    const [roleField, processField, documentTypeField, statusField, reviewDateField] =
+      await Promise.all([
+        this._resolveFieldName(listTitle, DISPLAY_NAMES.ROLE_CHOICE, FIELDS.ROLE_CHOICE),
+        this._resolveFieldName(listTitle, "Process", FIELDS.LIB_PROCESS),
+        this._resolveFieldName(listTitle, DISPLAY_NAMES.DOCUMENT_TYPE, FIELDS.DOCUMENT_TYPE),
+        this._resolveFieldName(listTitle, DISPLAY_NAMES.LIB_STATUS, FIELDS.LIB_STATUS),
+        this._resolveFieldName(listTitle, DISPLAY_NAMES.LIB_REVIEW_DATE, FIELDS.LIB_REVIEW_DATE),
+      ]);
 
     // "Process" is a Lookup column (references the Process list's Title), so the
     // REST API requires it to be selected as "Process/Title" with a matching
@@ -129,30 +186,30 @@ export class SopService {
     // "The $select query string must specify the target fields and the
     // $expand query string must contains Process."
     const items = await this._sp.web
-      .lists.getByTitle(this._config.libraryName)
+      .lists.getByTitle(listTitle)
       .items.select(
         "ID",
         "Title",
-        FIELDS.ROLE_CHOICE,
-        `${FIELDS.LIB_PROCESS}/Title`,
-        FIELDS.DOCUMENT_TYPE,
-        FIELDS.LIB_STATUS,
-        FIELDS.LIB_REVIEW_DATE,
+        roleField,
+        `${processField}/Title`,
+        documentTypeField,
+        statusField,
+        reviewDateField,
         FIELDS.LIB_FILE_REF,
         FIELDS.LIB_ENCODED_ABS_URL
       )
-      .expand(FIELDS.LIB_PROCESS)
-      .filter(`${FIELDS.ROLE_CHOICE} eq '${normalizedRole.replace(/'/g, "''")}'`)
+      .expand(processField)
+      .filter(`${roleField} eq '${normalizedRole.replace(/'/g, "''")}'`)
       .top(500)();
 
     return items.map((item: any) => ({
       id: item.ID,
       title: item.Title || "",
-      roleChoice: item[FIELDS.ROLE_CHOICE] || "",
-      processTitle: item[FIELDS.LIB_PROCESS]?.Title || "",
-      documentType: item[FIELDS.DOCUMENT_TYPE] || "",
-      status: item[FIELDS.LIB_STATUS] || "",
-      reviewDate: item[FIELDS.LIB_REVIEW_DATE] || "",
+      roleChoice: item[roleField] || "",
+      processTitle: item[processField]?.Title || "",
+      documentType: item[documentTypeField] || "",
+      status: item[statusField] || "",
+      reviewDate: item[reviewDateField] || "",
       fileUrl: item[FIELDS.LIB_ENCODED_ABS_URL] || item[FIELDS.LIB_FILE_REF] || "",
     }));
   }
