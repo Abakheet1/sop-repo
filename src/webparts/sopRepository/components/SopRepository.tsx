@@ -54,21 +54,6 @@ export const SopRepository: React.FC<ISopRepositoryProps> = (props) => {
   // Document selected for in-page preview (opens DocumentPreviewPanel)
   const [selectedDocument, setSelectedDocument] = useState<ISopDocument | null>(null);
 
-  // When Graph returns a job title and no manual override is set, auto-select it
-  useEffect(() => {
-    if (!defaultRole && jobTitle && !roleAutoDetected) {
-      setSelectedRole(jobTitle);
-      setRoleAutoDetected(true);
-    }
-  }, [jobTitle, defaultRole, roleAutoDetected]);
-
-  // When defaultRole prop changes (property pane), override selection
-  useEffect(() => {
-    if (defaultRole) {
-      setSelectedRole(defaultRole);
-    }
-  }, [defaultRole]);
-
   // Load SOP data for selected role
   const {
     roles,
@@ -79,6 +64,28 @@ export const SopRepository: React.FC<ISopRepositoryProps> = (props) => {
     isLoading: dataLoading,
     error,
   } = useSopData(service, selectedRole);
+
+  // When Graph returns a job title and no manual override is set, auto-select it.
+  // Waits for the Roles list to finish loading, then resolves the Graph job title
+  // to the matching Role list entry's exact Title (case-insensitive, trimmed
+  // comparison) so the dropdown highlights correctly and downstream queries use
+  // a value that's guaranteed to match the data. If no matching role exists in
+  // the list, falls back to the raw Graph string so a query is still attempted.
+  useEffect(() => {
+    if (defaultRole || roleAutoDetected || !jobTitle || roles.length === 0) return;
+    const match = roles.find(
+      (r) => r.title.trim().toLowerCase() === jobTitle.trim().toLowerCase()
+    );
+    setSelectedRole(match ? match.title : jobTitle);
+    setRoleAutoDetected(true);
+  }, [jobTitle, defaultRole, roleAutoDetected, roles]);
+
+  // When defaultRole prop changes (property pane), override selection
+  useEffect(() => {
+    if (defaultRole) {
+      setSelectedRole(defaultRole);
+    }
+  }, [defaultRole]);
 
   const isLoading = roleLoading || dataLoading;
 
@@ -133,13 +140,15 @@ export const SopRepository: React.FC<ISopRepositoryProps> = (props) => {
 
   return (
     <div className={styles.container}>
-      <Text variant="xLarge" className={styles.header}>
-        Role & Responsibility Documentation
-      </Text>
+      <Stack horizontal verticalAlign="center" className={styles.header}>
+        <Icon iconName="KnowledgeArticle" className={styles.headerIcon} />
+        <Text variant="xLarge">Role & Responsibility Documentation</Text>
+      </Stack>
+      <Separator className={styles.headerDivider} />
 
       <Stack horizontal className={styles.layout} tokens={{ childrenGap: 24 }}>
         {/* Filters sidebar */}
-        <Stack className={styles.sidebar} tokens={{ childrenGap: 20 }}>
+        <Stack className={styles.sidebar} tokens={{ childrenGap: 16 }}>
           <RoleSelector
             roles={roles}
             selectedRole={selectedRole}
@@ -169,6 +178,8 @@ export const SopRepository: React.FC<ISopRepositoryProps> = (props) => {
 
           {!isLoading && !error && selectedRole && (
             <>
+              <Separator className={styles.filterDivider} />
+
               <SearchBox
                 placeholder="Search by process, SOP, or job description..."
                 value={searchQuery}
@@ -177,49 +188,54 @@ export const SopRepository: React.FC<ISopRepositoryProps> = (props) => {
                 className={styles.search}
               />
 
-              <Dropdown
-                label="Document Type"
-                options={documentTypeOptions}
-                selectedKey={selectedDocumentType || ALL_TYPES_KEY}
-                onChange={(_, option) => {
-                  if (!option) return;
-                  setSelectedDocumentType(option.key === ALL_TYPES_KEY ? null : String(option.key));
-                }}
-                styles={{ root: { width: "100%" } }}
-              />
+              <Stack className={styles.filterGroup} tokens={{ childrenGap: 12 }}>
+                <Dropdown
+                  label="Document Type"
+                  options={documentTypeOptions}
+                  selectedKey={selectedDocumentType || ALL_TYPES_KEY}
+                  onChange={(_, option) => {
+                    if (!option) return;
+                    setSelectedDocumentType(option.key === ALL_TYPES_KEY ? null : String(option.key));
+                  }}
+                  styles={{ root: { width: "100%" } }}
+                />
 
-              <Dropdown
-                label="Status"
-                options={statusOptions}
-                selectedKey={selectedStatus || ALL_STATUSES_KEY}
-                onChange={(_, option) => {
-                  if (!option) return;
-                  setSelectedStatus(option.key === ALL_STATUSES_KEY ? null : String(option.key));
-                }}
-                styles={{ root: { width: "100%" } }}
-              />
+                <Dropdown
+                  label="Status"
+                  options={statusOptions}
+                  selectedKey={selectedStatus || ALL_STATUSES_KEY}
+                  onChange={(_, option) => {
+                    if (!option) return;
+                    setSelectedStatus(option.key === ALL_STATUSES_KEY ? null : String(option.key));
+                  }}
+                  styles={{ root: { width: "100%" } }}
+                />
+              </Stack>
 
               {/* Direct access to the current role's job description(s) */}
               {jobDescriptions.length > 0 && (
-                <Stack className={styles.jdQuickAccess} tokens={{ childrenGap: 6 }}>
-                  <Text variant="mediumPlus" className={styles.jdQuickAccessHeader}>
-                    Your Job Description
-                  </Text>
-                  {jobDescriptions.map((doc) => (
-                    <Link
-                      key={doc.id}
-                      href={doc.fileUrl}
-                      target="_blank"
-                      className={styles.jdQuickAccessLink}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        setSelectedDocument(doc);
-                      }}
-                    >
-                      <Icon iconName="ContactCard" /> {doc.title}
-                    </Link>
-                  ))}
-                </Stack>
+                <>
+                  <Separator className={styles.filterDivider} />
+                  <Stack className={styles.jdQuickAccess} tokens={{ childrenGap: 6 }}>
+                    <Text variant="mediumPlus" className={styles.jdQuickAccessHeader}>
+                      Your Job Description
+                    </Text>
+                    {jobDescriptions.map((doc) => (
+                      <Link
+                        key={doc.id}
+                        href={doc.fileUrl}
+                        target="_blank"
+                        className={styles.jdQuickAccessLink}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setSelectedDocument(doc);
+                        }}
+                      >
+                        <Icon iconName="ContactCard" /> {doc.title}
+                      </Link>
+                    ))}
+                  </Stack>
+                </>
               )}
             </>
           )}

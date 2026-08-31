@@ -76,6 +76,34 @@ export class SopService {
   }
 
   /**
+   * Compares a raw REST field value against a target role, case-insensitively
+   * and trimmed. Handles every shape a SharePoint Choice column can return:
+   * a plain string (single-value Choice), or a multi-value Choice's
+   * `{ results: string[] }` wrapper. Server-side OData `eq` filters on Choice
+   * columns require an exact byte-for-byte match (including case), which is
+   * too brittle for values sourced from Microsoft Graph job titles — this
+   * client-side comparison is the actual guard against case/whitespace
+   * differences (the behavior this method previously only claimed to have).
+   */
+  private static _roleMatches(fieldValue: unknown, targetRole: string): boolean {
+    const target = targetRole.trim().toLowerCase();
+    if (!fieldValue) return false;
+
+    if (typeof fieldValue === "string") {
+      return fieldValue.trim().toLowerCase() === target;
+    }
+
+    const multi = fieldValue as { results?: unknown[] };
+    if (Array.isArray(multi.results)) {
+      return multi.results.some(
+        (v) => typeof v === "string" && v.trim().toLowerCase() === target
+      );
+    }
+
+    return false;
+  }
+
+  /**
    * Resolves a column's true REST internal name by looking up its display
    * name in the list's field schema, instead of guessing SharePoint's
    * automatic encoding (spaces → _x0020_, parentheses → _x0028_/_x0029_,
@@ -141,7 +169,6 @@ export class SopService {
    * by checking whether documentLink is non-empty.
    */
   public async getProcessesByRole(role: string): Promise<IProcess[]> {
-    const normalizedRole = role.trim();
     const listTitle = this._config.processListName;
     const [roleField, documentLinkField, documentTypeField] = await Promise.all([
       this._resolveFieldName(listTitle, DISPLAY_NAMES.ROLE_CHOICE, FIELDS.ROLE_CHOICE),
@@ -149,19 +176,25 @@ export class SopService {
       this._resolveFieldName(listTitle, DISPLAY_NAMES.DOCUMENT_TYPE, FIELDS.DOCUMENT_TYPE),
     ]);
 
+    // Role matching is done client-side (see _roleMatches) rather than via an
+    // OData $filter, because Choice-column equality filters require an exact
+    // case-sensitive match — too brittle for a role string sourced from a
+    // Microsoft Graph job title that may differ in case/whitespace from the
+    // value stored in this list.
     const items = await this._sp.web
       .lists.getByTitle(listTitle)
       .items.select("ID", "Title", roleField, documentLinkField, documentTypeField)
-      .filter(`${roleField} eq '${normalizedRole.replace(/'/g, "''")}'`)
-      .top(500)();
+      .top(2000)();
 
-    return items.map((item: any) => ({
-      id: item.ID,
-      title: item.Title || "",
-      roleChoice: item[roleField] || "",
-      documentLink: item[documentLinkField]?.Url || item[documentLinkField] || "",
-      documentType: item[documentTypeField] || "",
-    }));
+    return items
+      .filter((item: any) => SopService._roleMatches(item[roleField], role))
+      .map((item: any) => ({
+        id: item.ID,
+        title: item.Title || "",
+        roleChoice: item[roleField] || "",
+        documentLink: item[documentLinkField]?.Url || item[documentLinkField] || "",
+        documentType: item[documentTypeField] || "",
+      }));
   }
 
   /**
@@ -169,7 +202,6 @@ export class SopService {
    * Includes both SOPs and Job Descriptions so the summary bar can tally each type.
    */
   public async getDocumentsByRole(role: string): Promise<ISopDocument[]> {
-    const normalizedRole = role.trim();
     const listTitle = this._config.libraryName;
     const [roleField, processField, documentTypeField, statusField, reviewDateField] =
       await Promise.all([
@@ -185,6 +217,9 @@ export class SopService {
     // $expand=Process — selecting the bare field name errors with:
     // "The $select query string must specify the target fields and the
     // $expand query string must contains Process."
+    //
+    // Role matching is done client-side (see _roleMatches) rather than via an
+    // OData $filter — see getProcessesByRole for why.
     const items = await this._sp.web
       .lists.getByTitle(listTitle)
       .items.select(
@@ -199,18 +234,19 @@ export class SopService {
         FIELDS.LIB_ENCODED_ABS_URL
       )
       .expand(processField)
-      .filter(`${roleField} eq '${normalizedRole.replace(/'/g, "''")}'`)
-      .top(500)();
+      .top(2000)();
 
-    return items.map((item: any) => ({
-      id: item.ID,
-      title: item.Title || "",
-      roleChoice: item[roleField] || "",
-      processTitle: item[processField]?.Title || "",
-      documentType: item[documentTypeField] || "",
-      status: item[statusField] || "",
-      reviewDate: item[reviewDateField] || "",
-      fileUrl: item[FIELDS.LIB_ENCODED_ABS_URL] || item[FIELDS.LIB_FILE_REF] || "",
-    }));
+    return items
+      .filter((item: any) => SopService._roleMatches(item[roleField], role))
+      .map((item: any) => ({
+        id: item.ID,
+        title: item.Title || "",
+        roleChoice: item[roleField] || "",
+        processTitle: item[processField]?.Title || "",
+        documentType: item[documentTypeField] || "",
+        status: item[statusField] || "",
+        reviewDate: item[reviewDateField] || "",
+        fileUrl: item[FIELDS.LIB_ENCODED_ABS_URL] || item[FIELDS.LIB_FILE_REF] || "",
+      }));
   }
 }

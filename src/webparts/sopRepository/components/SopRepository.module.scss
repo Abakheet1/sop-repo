@@ -1,11 +1,25 @@
 .container {
-  padding: 16px 20px;
+  padding: 20px 24px 32px;
   font-family: "Segoe UI", "Segoe UI Web (West European)", sans-serif;
+  max-width: 1400px;
+  margin: 0 auto;
 }
 
 .header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   color: #201f1e;
-  margin-bottom: 16px;
+  margin-bottom: 4px;
+}
+
+.headerIcon {
+  font-size: 24px;
+  color: #0078d4;
+}
+
+.headerDivider {
+  margin: 12px 0 20px;
 }
 
 .layout {
@@ -13,18 +27,36 @@
 }
 
 .sidebar {
-  width: 260px;
-  flex: 0 0 260px;
+  width: 280px;
+  flex: 0 0 280px;
   position: sticky;
   top: 12px;
+  background: #faf9f8;
+  border: 1px solid #edebe9;
+  border-radius: 8px;
+  padding: 18px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.filterGroup {
+  padding-top: 4px;
+}
+
+.filterDivider {
+  margin: 4px 0;
 }
 
 .content {
   flex: 1;
   min-width: 0;
+  padding-top: 2px;
 }
 
 @media (max-width: 768px) {
+  .container {
+    padding: 16px;
+  }
+
   .layout {
     flex-direction: column;
   }
