@@ -1,6 +1,7 @@
 import * as React from "react";
-import { Stack, Text } from "@fluentui/react";
+import { Stack, Text, Link, Icon, Separator } from "@fluentui/react";
 import { IRole } from "../../models/IRole";
+import { ISopDocument } from "../../models/ISopDocument";
 import styles from "./CurrentRoleCard.module.scss";
 
 export interface ICurrentRoleCardProps {
@@ -9,6 +10,10 @@ export interface ICurrentRoleCardProps {
   roleTitle: string;
   /** True when this role was auto-detected from the signed-in user's profile rather than manually selected */
   isAutoDetected: boolean;
+  /** Job Description document(s) for this role, surfaced here for direct access alongside role identity/description */
+  jobDescriptions: ISopDocument[];
+  /** Opens the in-page document preview panel instead of a new browser tab */
+  onSelectDocument: (doc: ISopDocument) => void;
 }
 
 /** Builds a short avatar label from a department or role title, e.g. "Information Technology" -> "IT" */
@@ -23,9 +28,18 @@ function getInitials(text: string): string {
  * Orients the user to which role's content they're viewing before they scan the
  * summary counts and document lists below — restores the old app's "Current Role"
  * card (name + description), which the redesign had dropped even though the
- * Roles list's Description column was still being fetched and unused.
+ * Roles list's Description column was still being fetched and unused. Also
+ * surfaces direct access to the role's Job Description document(s) here
+ * instead of a separate box lower in the sidebar, since it's the same "about
+ * your role" context and is more discoverable next to the role identity.
  */
-export const CurrentRoleCard: React.FC<ICurrentRoleCardProps> = ({ role, roleTitle, isAutoDetected }) => {
+export const CurrentRoleCard: React.FC<ICurrentRoleCardProps> = ({
+  role,
+  roleTitle,
+  isAutoDetected,
+  jobDescriptions,
+  onSelectDocument,
+}) => {
   const title = role?.title || roleTitle;
   const initials = getInitials(role?.department || title);
 
@@ -48,6 +62,32 @@ export const CurrentRoleCard: React.FC<ICurrentRoleCardProps> = ({ role, roleTit
           {role.description}
         </Text>
       )}
+
+      {jobDescriptions.length > 0 && (
+        <>
+          <Separator className={styles.jdSeparator} />
+          <Stack tokens={{ childrenGap: 6 }}>
+            <Text variant="mediumPlus" className={styles.jdHeader}>
+              Your Job Description
+            </Text>
+            {jobDescriptions.map((doc) => (
+              <Link
+                key={doc.id}
+                href={doc.fileUrl}
+                target="_blank"
+                className={styles.jdLink}
+                onClick={(e) => {
+                  e.preventDefault();
+                  onSelectDocument(doc);
+                }}
+              >
+                <Icon iconName="ContactCard" /> {doc.title}
+              </Link>
+            ))}
+          </Stack>
+        </>
+      )}
     </div>
   );
 };
+

@@ -1,24 +1,21 @@
 
 require("./SopRepository.module.css");
 const styles = {
-  container: 'container_706f210c',
-  header: 'header_706f210c',
-  headerIcon: 'headerIcon_706f210c',
-  headerDivider: 'headerDivider_706f210c',
-  layout: 'layout_706f210c',
-  sidebar: 'sidebar_706f210c',
-  filterGroup: 'filterGroup_706f210c',
-  filterDivider: 'filterDivider_706f210c',
-  content: 'content_706f210c',
-  search: 'search_706f210c',
-  jdQuickAccess: 'jdQuickAccess_706f210c',
-  jdQuickAccessHeader: 'jdQuickAccessHeader_706f210c',
-  jdQuickAccessLink: 'jdQuickAccessLink_706f210c',
-  sectionHeader: 'sectionHeader_706f210c',
-  gapHeader: 'gapHeader_706f210c',
-  gapHeaderIcon: 'gapHeaderIcon_706f210c',
-  separator: 'separator_706f210c',
-  emptyState: 'emptyState_706f210c'
+  container: 'container_18ebc25b',
+  header: 'header_18ebc25b',
+  headerIcon: 'headerIcon_18ebc25b',
+  headerDivider: 'headerDivider_18ebc25b',
+  layout: 'layout_18ebc25b',
+  sidebar: 'sidebar_18ebc25b',
+  filterGroup: 'filterGroup_18ebc25b',
+  filterDivider: 'filterDivider_18ebc25b',
+  content: 'content_18ebc25b',
+  search: 'search_18ebc25b',
+  sectionHeader: 'sectionHeader_18ebc25b',
+  gapHeader: 'gapHeader_18ebc25b',
+  gapHeaderIcon: 'gapHeaderIcon_18ebc25b',
+  separator: 'separator_18ebc25b',
+  emptyState: 'emptyState_18ebc25b'
 };
 
 export default styles;

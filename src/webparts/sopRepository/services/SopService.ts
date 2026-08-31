@@ -32,6 +32,7 @@ const FIELDS = {
   LIB_REVIEW_DATE: "ReviewDate",                     // Display: "Review Date"
   LIB_FILE_REF: "FileRef",                           // Built-in: relative server path
   LIB_ENCODED_ABS_URL: "EncodedAbsUrl",              // Built-in: absolute URL
+  LIB_FILE_LEAF_REF: "FileLeafRef",                  // Built-in: file name with extension
 
   // Roles list columns
   ROLES_DEPARTMENT: "Department",
@@ -231,7 +232,8 @@ export class SopService {
         statusField,
         reviewDateField,
         FIELDS.LIB_FILE_REF,
-        FIELDS.LIB_ENCODED_ABS_URL
+        FIELDS.LIB_ENCODED_ABS_URL,
+        FIELDS.LIB_FILE_LEAF_REF
       )
       .expand(processField)
       .top(2000)();
@@ -240,7 +242,11 @@ export class SopService {
       .filter((item: any) => SopService._roleMatches(item[roleField], role))
       .map((item: any) => ({
         id: item.ID,
-        title: item.Title || "",
+        // Document libraries commonly leave the optional "Title" metadata column
+        // blank even though a real file was uploaded — fall back to the actual
+        // file name so the document always has visible, clickable link text
+        // instead of rendering an empty link.
+        title: item.Title || item[FIELDS.LIB_FILE_LEAF_REF] || "Untitled Document",
         roleChoice: item[roleField] || "",
         processTitle: item[processField]?.Title || "",
         documentType: item[documentTypeField] || "",

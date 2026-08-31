@@ -9,7 +9,6 @@ import {
   MessageBar,
   MessageBarType,
   Separator,
-  Link,
   Icon,
   Dropdown,
   IDropdownOption,
@@ -212,32 +211,6 @@ export const SopRepository: React.FC<ISopRepositoryProps> = (props) => {
                   styles={{ root: { width: "100%" } }}
                 />
               </Stack>
-
-              {/* Direct access to the current role's job description(s) */}
-              {jobDescriptions.length > 0 && (
-                <>
-                  <Separator className={styles.filterDivider} />
-                  <Stack className={styles.jdQuickAccess} tokens={{ childrenGap: 6 }}>
-                    <Text variant="mediumPlus" className={styles.jdQuickAccessHeader}>
-                      Your Job Description
-                    </Text>
-                    {jobDescriptions.map((doc) => (
-                      <Link
-                        key={doc.id}
-                        href={doc.fileUrl}
-                        target="_blank"
-                        className={styles.jdQuickAccessLink}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          setSelectedDocument(doc);
-                        }}
-                      >
-                        <Icon iconName="ContactCard" /> {doc.title}
-                      </Link>
-                    ))}
-                  </Stack>
-                </>
-              )}
             </>
           )}
         </Stack>
@@ -275,6 +248,8 @@ export const SopRepository: React.FC<ISopRepositoryProps> = (props) => {
                 role={roles.find((r) => r.title === selectedRole)}
                 roleTitle={selectedRole}
                 isAutoDetected={roleAutoDetected && !defaultRole}
+                jobDescriptions={jobDescriptions}
+                onSelectDocument={setSelectedDocument}
               />
 
               {/* Summary bar */}
