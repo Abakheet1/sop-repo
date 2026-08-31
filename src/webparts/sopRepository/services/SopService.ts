@@ -25,7 +25,7 @@ const FIELDS = {
   DOCUMENT_LINK: "DocumentLink",                      // Display: "Document Link" (URL field, internal name confirmed from schema)
   DOCUMENT_TYPE: "DocumentType",                      // Display: "Document Type"
 
-  // SOP Process Library columns
+  // SOP & Process Library columns
   LIB_PROCESS: "Process",                            // Display: "Process"
   LIB_STATUS: "Status",
   LIB_REVIEW_DATE: "ReviewDate",                     // Display: "Review Date"
@@ -117,7 +117,7 @@ export class SopService {
   }
 
   /**
-   * Returns all documents from the SOP Process Library for the given role.
+   * Returns all documents from the SOP & Process Library for the given role.
    * Includes both SOPs and Job Descriptions so the summary bar can tally each type.
    */
   public async getDocumentsByRole(role: string): Promise<ISopDocument[]> {

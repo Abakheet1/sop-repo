@@ -33,7 +33,7 @@ export default class SopRepositoryWebPart extends BaseClientSideWebPart<ISopRepo
   private _initService(): void {
     this._service = new SopService(this.context, {
       sopSiteUrl: this.properties.sopSiteUrl || "",
-      libraryName: this.properties.libraryName || "SOP Process Library",
+      libraryName: this.properties.libraryName || "SOP & Process Library",
       processListName: this.properties.processListName || "Process",
       rolesListName: this.properties.rolesListName || "Roles",
     });
@@ -49,7 +49,7 @@ export default class SopRepositoryWebPart extends BaseClientSideWebPart<ISopRepo
         context: this.context,
         service: this._service,
         sopSiteUrl: this.properties.sopSiteUrl || "",
-        libraryName: this.properties.libraryName || "SOP Process Library",
+        libraryName: this.properties.libraryName || "SOP & Process Library",
         processListName: this.properties.processListName || "Process",
         rolesListName: this.properties.rolesListName || "Roles",
         showGaps: this.properties.showGaps !== false,
@@ -83,14 +83,14 @@ export default class SopRepositoryWebPart extends BaseClientSideWebPart<ISopRepo
                 PropertyPaneTextField("sopSiteUrl", {
                   label: strings.SopSiteUrlLabel,
                   description:
-                    "Full URL of the site containing the SOP Process Library, Process list, and Roles list. Example: https://communityessentials.sharepoint.com/sites/SOPProcessManagement",
+                    "Full URL of the site containing the SOP & Process Library, Process list, and Roles list. Example: https://communityessentials.sharepoint.com/sites/SOPProcessManagement",
                   placeholder:
                     "https://communityessentials.sharepoint.com/sites/SOPProcessManagement",
                   multiline: false,
                 }),
                 PropertyPaneTextField("libraryName", {
                   label: strings.LibraryNameLabel,
-                  placeholder: "SOP Process Library",
+                  placeholder: "SOP & Process Library",
                 }),
                 PropertyPaneTextField("processListName", {
                   label: strings.ProcessListNameLabel,

@@ -17,7 +17,7 @@
       "officeFabricIconFontName": "Documentation",
       "properties": {
         "sopSiteUrl": "https://communityessentials.sharepoint.com/sites/SOPProcessManagement",
-        "libraryName": "SOP Process Library",
+        "libraryName": "SOP & Process Library",
         "processListName": "Process",
         "rolesListName": "Roles",
         "showGaps": true,
