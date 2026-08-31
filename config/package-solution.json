@@ -35,6 +35,6 @@
     ]
   },
   "paths": {
-    "zippedPackage": "solution/sop-repository-v1.1.sppkg"
+    "zippedPackage": "solution/sop-repository.sppkg"
   }
 }
