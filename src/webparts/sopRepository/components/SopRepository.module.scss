@@ -5,12 +5,55 @@
 
 .header {
   color: #201f1e;
-  margin-bottom: 4px;
+  margin-bottom: 16px;
+}
+
+.layout {
+  align-items: flex-start;
+}
+
+.sidebar {
+  width: 260px;
+  flex: 0 0 260px;
+  position: sticky;
+  top: 12px;
+}
+
+.content {
+  flex: 1;
+  min-width: 0;
+}
+
+@media (max-width: 768px) {
+  .layout {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    flex: 1 1 auto;
+    position: static;
+  }
 }
 
 .search {
-  margin-bottom: 16px;
-  max-width: 400px;
+  max-width: 100%;
+}
+
+.jdQuickAccess {
+  background: #eff6fc;
+  border: 1px solid #c7e0f4;
+  border-radius: 4px;
+  padding: 10px 12px;
+}
+
+.jdQuickAccessHeader {
+  font-weight: 600;
+  color: #201f1e;
+}
+
+.jdQuickAccessLink {
+  font-size: 13px;
 }
 
 .sectionHeader {
@@ -22,7 +65,14 @@
 }
 
 .gapHeader {
-  color: #d83b01;
+  color: #8a6d00;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.gapHeaderIcon {
+  font-size: 16px;
 }
 
 .separator {

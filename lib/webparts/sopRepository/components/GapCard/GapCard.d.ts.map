@@ -1,1 +1,0 @@
-{"version":3,"file":"GapCard.d.ts","sourceRoot":"","sources":["../../../../../src/webparts/sopRepository/components/GapCard/GapCard.tsx"],"names":[],"mappings":"AAAA,OAAO,KAAK,KAAK,MAAM,OAAO,CAAC;AAE/B,OAAO,EAAE,iBAAiB,EAAE,MAAM,gCAAgC,CAAC;AAGnE,MAAM,WAAW,aAAa;IAC5B,OAAO,EAAE,iBAAiB,CAAC;CAC5B;AAED,eAAO,MAAM,OAAO,EAAE,KAAK,CAAC,EAAE,CAAC,aAAa,CAgB3C,CAAC"}

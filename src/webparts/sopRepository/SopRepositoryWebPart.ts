@@ -54,7 +54,7 @@ export default class SopRepositoryWebPart extends BaseClientSideWebPart<ISopRepo
         rolesListName: this.properties.rolesListName || "Roles",
         showGaps: this.properties.showGaps !== false,
         defaultRole: this.properties.defaultRole || "",
-        isPropertyPaneOpen: this.isPropertyPaneOpen,
+        isPropertyPaneOpen: this.context.propertyPane.isPropertyPaneOpen(),
       }
     );
 

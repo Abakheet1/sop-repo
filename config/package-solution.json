@@ -16,10 +16,10 @@
     },
     "metadata": {
       "shortDescription": {
-        "default": "IT SOP & Policy Documentation Repository"
+        "default": "Role & Responsibility Documentation Repository"
       },
       "longDescription": {
-        "default": "Surfaces IT SOPs and policies from SharePoint with role-based filtering and gap detection"
+        "default": "Surfaces SOPs, policies, and job descriptions from SharePoint, organized by role and department, and highlights processes that still need documentation"
       },
       "screenshotPaths": [],
       "videoUrl": "",
@@ -27,8 +27,8 @@
     },
     "features": [
       {
-        "title": "SOP Repository Feature",
-        "description": "The feature that activates elements for the SOP Repository.",
+        "title": "Role & Responsibility Documentation Feature",
+        "description": "The feature that activates elements for the Role & Responsibility Documentation web part.",
         "id": "b2c3d4e5-f6a7-8901-bcde-f01234567891",
         "version": "1.0.0.0"
       }

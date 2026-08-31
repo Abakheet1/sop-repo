@@ -1,16 +1,18 @@
-# SOP Repository
+# Role & Responsibility Documentation
 
-This repository contains the SharePoint Framework (SPFx) web part for the SOP Repository application.
+This repository contains the SharePoint Framework (SPFx) web part for the Role & Responsibility Documentation application (internally, the solution and code are still named "sop-repository"/"SopRepository" to avoid breaking sites where the web part is already deployed).
 
 It is designed to help a developer or GitHub Copilot quickly understand the project, make UI or logic changes, and package/deploy the solution to SharePoint.
 
 ## Project purpose
 
-The app provides a searchable, filterable SOP repository experience for employees. It includes:
+The app provides a searchable, role- and department-organized documentation experience for employees. It includes:
 
 - role and department filtering
-- SOP document cards and metadata
+- SOP and job description cards with metadata
+- direct access to a user's own job description
 - document preview and detail behaviors
+- highlighting of processes that still need documentation ("Undocumented Processes")
 - SharePoint-formatted packaging for deployment
 
 ## Tech stack
@@ -75,6 +77,7 @@ When making changes in GitHub Copilot, keep the following in mind:
 - Keep behavior consistent with the current web part UX and mobile layout expectations.
 - Validate with the SPFx build before shipping changes.
 - If adding a new feature, update the relevant component, model, and service layer together.
+- Use clear, formal, professional wording in all user-facing text — the audience is municipal government staff. Avoid slang, casual phrasing, and alarming language (e.g. prefer "Undocumented Processes" over "Gaps", and amber/informational styling over red/critical styling for missing-but-not-urgent items).
 
 ## Typical edit workflow
 

@@ -12,8 +12,11 @@ declare interface ISopRepositoryWebPartStrings {
   ErrorLabel: string;
   NoRoleDetectedLabel: string;
   SelectRoleLabel: string;
+  SelectDepartmentLabel: string;
+  AllDepartmentsLabel: string;
   DocumentedSectionTitle: string;
   GapsSectionTitle: string;
+  JobDescriptionsSectionTitle: string;
   SearchPlaceholder: string;
   StatusApproved: string;
   StatusDraft: string;

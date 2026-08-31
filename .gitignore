@@ -3,5 +3,7 @@ node_modules/
 release/
 .temp/
 temp/
+lib/
+dist/
 # Keep the SharePoint package and deployment files in version control.
 # Generated build output is still ignored below when appropriate.

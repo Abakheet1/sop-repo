@@ -1,1 +1,0 @@
-{"version":3,"file":"IRole.d.ts","sourceRoot":"","sources":["../../../../src/webparts/sopRepository/models/IRole.ts"],"names":[],"mappings":"AAAA,MAAM,WAAW,KAAK;IACpB,EAAE,EAAE,MAAM,CAAC;IACX,KAAK,EAAE,MAAM,CAAC;IACd,WAAW,EAAE,MAAM,CAAC;IACpB,UAAU,EAAE,MAAM,CAAC;IACnB,MAAM,EAAE,OAAO,CAAC;CACjB"}

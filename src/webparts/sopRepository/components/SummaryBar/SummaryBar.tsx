@@ -21,8 +21,8 @@ export const SummaryBar: React.FC<ISummaryBarProps> = ({ sopCount, jdCount, gapC
       </Stack>
       {gapCount > 0 && (
         <Stack horizontal tokens={{ childrenGap: 6 }} verticalAlign="center">
-          <span className={`${styles.badge} ${styles.gapBadge}`}>⚠ {gapCount}</span>
-          <Text variant="mediumPlus">Gaps</Text>
+          <span className={`${styles.badge} ${styles.gapBadge}`}>{gapCount}</span>
+          <Text variant="mediumPlus">Undocumented</Text>
         </Stack>
       )}
     </Stack>
