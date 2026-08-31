@@ -123,19 +123,25 @@ export class SopService {
   public async getDocumentsByRole(role: string): Promise<ISopDocument[]> {
     const normalizedRole = role.trim();
 
+    // "Process" is a Lookup column (references the Process list's Title), so the
+    // REST API requires it to be selected as "Process/Title" with a matching
+    // $expand=Process — selecting the bare field name errors with:
+    // "The $select query string must specify the target fields and the
+    // $expand query string must contains Process."
     const items = await this._sp.web
       .lists.getByTitle(this._config.libraryName)
       .items.select(
         "ID",
         "Title",
         FIELDS.ROLE_CHOICE,
-        FIELDS.LIB_PROCESS,
+        `${FIELDS.LIB_PROCESS}/Title`,
         FIELDS.DOCUMENT_TYPE,
         FIELDS.LIB_STATUS,
         FIELDS.LIB_REVIEW_DATE,
         FIELDS.LIB_FILE_REF,
         FIELDS.LIB_ENCODED_ABS_URL
       )
+      .expand(FIELDS.LIB_PROCESS)
       .filter(`${FIELDS.ROLE_CHOICE} eq '${normalizedRole.replace(/'/g, "''")}'`)
       .top(500)();
 
@@ -143,7 +149,7 @@ export class SopService {
       id: item.ID,
       title: item.Title || "",
       roleChoice: item[FIELDS.ROLE_CHOICE] || "",
-      processTitle: item[FIELDS.LIB_PROCESS] || "",
+      processTitle: item[FIELDS.LIB_PROCESS]?.Title || "",
       documentType: item[FIELDS.DOCUMENT_TYPE] || "",
       status: item[FIELDS.LIB_STATUS] || "",
       reviewDate: item[FIELDS.LIB_REVIEW_DATE] || "",
