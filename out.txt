@@ -1,0 +1,4 @@
+  File "<string>", line 15
+    if '**' in t or '\' in t or (t.strip().startswith('#')) or '](' in t:
+                                                       ^^^^^^^^^^^^^^^^^^^
+SyntaxError: expected ':'
