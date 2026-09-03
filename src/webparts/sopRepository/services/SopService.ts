@@ -32,6 +32,7 @@ const FIELDS = {
   LIB_STATUS: "Status",
   LIB_REVIEW_DATE: "ReviewDate",                     // Display: "Review Date"
   LIB_OWNER: "Owner",
+  LIB_ROLE_LOOKUP: "Role_x0020__x0028_Lookup_x0029_", // Display: "Role (Lookup)"
   LIB_FILE_REF: "FileRef",                           // Built-in: relative server path
   LIB_ENCODED_ABS_URL: "EncodedAbsUrl",              // Built-in: absolute URL
   LIB_FILE_LEAF_REF: "FileLeafRef",                  // Built-in: file name with extension
@@ -50,6 +51,7 @@ const DISPLAY_NAMES = {
   LIB_STATUS: "Status",
   LIB_REVIEW_DATE: "Review Date",
   LIB_OWNER: "Owner",
+  LIB_ROLE_LOOKUP: "Role (Lookup)",
   ROLES_DEPARTMENT: "Department",
   ROLES_ACTIVE: "Active",
   ROLES_DESCRIPTION: "Description",
@@ -382,13 +384,28 @@ export class SopService {
    */
   public async uploadDocument(params: IUploadDocumentParams): Promise<void> {
     const listTitle = this._config.libraryName;
-    const [roleField, processField, documentTypeField, statusField, ownerField] = await Promise.all([
-      this._resolveFieldName(listTitle, DISPLAY_NAMES.ROLE_CHOICE, FIELDS.ROLE_CHOICE),
-      this._resolveFieldName(listTitle, "Process", FIELDS.LIB_PROCESS),
-      this._resolveFieldName(listTitle, DISPLAY_NAMES.DOCUMENT_TYPE, FIELDS.DOCUMENT_TYPE),
-      this._resolveFieldName(listTitle, DISPLAY_NAMES.LIB_STATUS, FIELDS.LIB_STATUS),
-      this._resolveFieldName(listTitle, DISPLAY_NAMES.LIB_OWNER, FIELDS.LIB_OWNER),
-    ]);
+    const [roleField, processField, documentTypeField, statusField, ownerField, roleLookupField] =
+      await Promise.all([
+        this._resolveFieldName(listTitle, DISPLAY_NAMES.ROLE_CHOICE, FIELDS.ROLE_CHOICE),
+        this._resolveFieldName(listTitle, "Process", FIELDS.LIB_PROCESS),
+        this._resolveFieldName(listTitle, DISPLAY_NAMES.DOCUMENT_TYPE, FIELDS.DOCUMENT_TYPE),
+        this._resolveFieldName(listTitle, DISPLAY_NAMES.LIB_STATUS, FIELDS.LIB_STATUS),
+        this._resolveFieldName(listTitle, DISPLAY_NAMES.LIB_OWNER, FIELDS.LIB_OWNER),
+        this._resolveFieldName(listTitle, DISPLAY_NAMES.LIB_ROLE_LOOKUP, FIELDS.LIB_ROLE_LOOKUP),
+      ]);
+
+    // The library's "Role (Lookup)" column points at the matching item in the
+    // Roles list (separate from "Role (Choice)", which is just free text) —
+    // resolve it here so uploads stay consistent with manually-entered rows,
+    // which otherwise leave Role (Lookup) blank and out of sync.
+    let matchedRoleId: number | undefined;
+    try {
+      const roles = await this.getRoles();
+      const target = params.role.trim().toLowerCase();
+      matchedRoleId = roles.find((r) => r.title.trim().toLowerCase() === target)?.id;
+    } catch (err) {
+      console.error("[SopService] Failed to resolve Role (Lookup) for upload:", err);
+    }
 
     const library = this._sp.web.lists.getByTitle(listTitle);
     const rootFolder = await library.rootFolder();
@@ -417,6 +434,12 @@ export class SopService {
     // require for writes.
     if (params.ownerId) {
       updateProps[`${ownerField}Id`] = params.ownerId;
+    }
+    // Best-effort — if the Roles list has no item whose Title exactly matches
+    // (e.g. the role was renamed/deactivated), Role (Choice) is still correct
+    // and the app keeps working; only this secondary lookup column is skipped.
+    if (matchedRoleId) {
+      updateProps[`${roleLookupField}Id`] = matchedRoleId;
     }
     await item.update(updateProps);
 
