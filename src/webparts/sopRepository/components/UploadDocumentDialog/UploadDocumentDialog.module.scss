@@ -3,16 +3,21 @@
   border: 1px solid #deecf9;
   border-radius: 4px;
   padding: 10px 12px;
+  box-sizing: border-box;
+  max-width: 100%;
 }
 
 .contextLabel {
   color: #605e5c;
   font-weight: 600;
   min-width: 56px;
+  flex-shrink: 0;
 }
 
 .contextValue {
   color: #201f1e;
+  overflow-wrap: anywhere;
+  min-width: 0;
 }
 
 .fileLabel {

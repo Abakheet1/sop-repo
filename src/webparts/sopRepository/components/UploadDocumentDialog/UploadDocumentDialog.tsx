@@ -171,16 +171,20 @@ export const UploadDocumentDialog: React.FC<IUploadDocumentDialogProps> = ({
         title: "Upload Document",
         subText: "Attach a SOP or job description document to this process.",
       }}
-      modalProps={{ isBlocking: isUploading }}
+      modalProps={{
+        isBlocking: isUploading,
+        styles: { main: { minWidth: "480px", maxWidth: "560px", width: "90vw" } },
+      }}
       minWidth={480}
+      maxWidth={560}
     >
-      <Stack tokens={{ childrenGap: 14 }}>
+      <Stack tokens={{ childrenGap: 14 }} styles={{ root: { width: "100%", minWidth: 0 } }}>
         <Stack className={styles.contextBox} tokens={{ childrenGap: 4 }}>
-          <Stack horizontal tokens={{ childrenGap: 6 }}>
+          <Stack horizontal tokens={{ childrenGap: 6 }} styles={{ root: { minWidth: 0 } }}>
             <Text variant="small" className={styles.contextLabel}>Process:</Text>
             <Text variant="small" className={styles.contextValue}>{process.processTitle}</Text>
           </Stack>
-          <Stack horizontal tokens={{ childrenGap: 6 }}>
+          <Stack horizontal tokens={{ childrenGap: 6 }} styles={{ root: { minWidth: 0 } }}>
             <Text variant="small" className={styles.contextLabel}>Role:</Text>
             <Text variant="small" className={styles.contextValue}>{process.roleChoice || "—"}</Text>
           </Stack>
@@ -236,12 +240,24 @@ export const UploadDocumentDialog: React.FC<IUploadDocumentDialogProps> = ({
                     <DefaultButton
                       key={p.id}
                       text={`${p.displayName}${p.email ? ` (${p.email})` : ""}`}
+                      title={`${p.displayName}${p.email ? ` (${p.email})` : ""}`}
                       onClick={() => {
                         setSelectedOwner(p);
                         setOwnerQuery("");
                         setOwnerSuggestions([]);
                       }}
-                      styles={{ root: { justifyContent: "flex-start", border: "none" } }}
+                      styles={{
+                        root: { justifyContent: "flex-start", border: "none", width: "100%", minWidth: 0 },
+                        flexContainer: { minWidth: 0 },
+                        textContainer: { minWidth: 0, overflow: "hidden" },
+                        label: {
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                          minWidth: 0,
+                          display: "block",
+                        },
+                      }}
                     />
                   ))}
                 </Stack>
@@ -261,16 +277,25 @@ export const UploadDocumentDialog: React.FC<IUploadDocumentDialogProps> = ({
           )}
         </Stack>
 
-        <Stack tokens={{ childrenGap: 6 }}>
+        <Stack tokens={{ childrenGap: 6 }} styles={{ root: { minWidth: 0 } }}>
           <Text variant="small" className={styles.fileLabel}>File</Text>
           <DefaultButton
             iconProps={{ iconName: "Upload" }}
             text={file ? file.name : "Choose File..."}
+            title={file ? file.name : undefined}
             onClick={() => fileInputRef.current?.click()}
             disabled={isUploading}
             styles={{
-              root: { justifyContent: "flex-start" },
-              label: { overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" },
+              root: { justifyContent: "flex-start", width: "100%", maxWidth: "100%", minWidth: 0 },
+              flexContainer: { minWidth: 0 },
+              textContainer: { minWidth: 0, overflow: "hidden" },
+              label: {
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+                minWidth: 0,
+                display: "block",
+              },
             }}
           />
           <input
