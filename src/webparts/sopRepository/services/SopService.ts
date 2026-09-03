@@ -296,15 +296,35 @@ export class SopService {
         this._resolveFieldName(listTitle, "AccessLevel", "AccessLevel"),
       ]);
 
+      // UserPrincipalName is a Person/Group (People Picker) column, so its REST
+      // value is an object, not plain text — request the person's Email/Login
+      // Name/Title via $expand instead of selecting the field directly.
       const items = await this._sp.web
         .lists.getByTitle(listTitle)
-        .items.select("ID", upnField, accessField)
+        .items.select(
+          "ID",
+          `${upnField}/EMail`,
+          `${upnField}/Name`,
+          `${upnField}/Title`,
+          accessField
+        )
+        .expand(upnField)
         .top(2000)();
 
       const target = userPrincipalName.trim().toLowerCase();
       return items.some((item: any) => {
-        const upn = String(item[upnField] || "").trim().toLowerCase();
-        if (upn !== target) return false;
+        const person = SopService._extractPerson(item[upnField]);
+        if (!person) return false;
+
+        const email = String(person.EMail || "").trim().toLowerCase();
+        const loginName = String(person.Name || "").trim().toLowerCase();
+        // Login names are claims-encoded (e.g. "i:0#.f|membership|user@domain.com") —
+        // also compare the substring after the last "|" so a claims-format login
+        // still matches a plain email/UPN.
+        const loginEmail = loginName.includes("|") ? loginName.split("|").pop() || "" : loginName;
+        const matchesUser = email === target || loginName === target || loginEmail === target;
+        if (!matchesUser) return false;
+
         const rawAccess = item[accessField];
         const access =
           typeof rawAccess === "string"
@@ -316,6 +336,23 @@ export class SopService {
       console.error("[SopService] Failed to verify admin access:", err);
       return false;
     }
+  }
+
+  /**
+   * Normalizes a People Picker field's REST shape to a single person object.
+   * Single-value Person columns return the object directly; multi-value
+   * (allow-multiple) Person columns return { results: [...] } — this handles
+   * either shape and always returns the first/only person, or undefined.
+   */
+  private static _extractPerson(
+    raw: unknown
+  ): { EMail?: string; Name?: string; Title?: string } | undefined {
+    if (!raw) return undefined;
+    const withResults = raw as { results?: { EMail?: string; Name?: string; Title?: string }[] };
+    if (Array.isArray(withResults.results)) {
+      return withResults.results[0];
+    }
+    return raw as { EMail?: string; Name?: string; Title?: string };
   }
 
   /**
