@@ -113,6 +113,14 @@ When handing this repo to GitHub Copilot or another developer, make sure they kn
 - SharePoint packaging and deployment artifacts live in `sharepoint/solution/`.
 - Build validation should happen with the SPFx gulp commands before final deployment.
 
+## Documentation
+
+Detailed application documentation lives in `docs/`:
+
+- [`docs/APPLICATION-LIFECYCLE.md`](docs/APPLICATION-LIFECYCLE.md) — how the app was built, its architecture, data model, and runtime lifecycle.
+- [`docs/UPDATE-GUIDE.md`](docs/UPDATE-GUIDE.md) — how to make changes, rebuild, package, and deploy updates.
+- [`docs/CLIENT-SHAREPOINT-PAGE.md`](docs/CLIENT-SHAREPOINT-PAGE.md) — content draft and instructions for a client-facing SharePoint page linking staff to this documentation.
+
 ## License
 
 This project currently does not include an explicit license file. Add one if your organization requires a formal license before publishing externally.
