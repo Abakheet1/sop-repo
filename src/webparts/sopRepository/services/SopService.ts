@@ -6,6 +6,7 @@ import "@pnp/sp/fields";
 import "@pnp/sp/items";
 import "@pnp/sp/files";
 import "@pnp/sp/folders";
+import "@pnp/sp/site-users";
 import { IRole } from "../models/IRole";
 import { IProcess } from "../models/IProcess";
 import { ISopDocument } from "../models/ISopDocument";
@@ -30,6 +31,7 @@ const FIELDS = {
   LIB_PROCESS: "Process",                            // Display: "Process"
   LIB_STATUS: "Status",
   LIB_REVIEW_DATE: "ReviewDate",                     // Display: "Review Date"
+  LIB_OWNER: "Owner",
   LIB_FILE_REF: "FileRef",                           // Built-in: relative server path
   LIB_ENCODED_ABS_URL: "EncodedAbsUrl",              // Built-in: absolute URL
   LIB_FILE_LEAF_REF: "FileLeafRef",                  // Built-in: file name with extension
@@ -47,6 +49,7 @@ const DISPLAY_NAMES = {
   DOCUMENT_TYPE: "Document Type",
   LIB_STATUS: "Status",
   LIB_REVIEW_DATE: "Review Date",
+  LIB_OWNER: "Owner",
   ROLES_DEPARTMENT: "Department",
   ROLES_ACTIVE: "Active",
   ROLES_DESCRIPTION: "Description",
@@ -73,6 +76,18 @@ export interface IUploadDocumentParams {
   processId: number;
   documentType: string;
   status: string;
+  /** SharePoint site user Id (from searchPeople/ensurePersonByEmail) to stamp
+   * on the library's "Owner" Person column. Optional — left unset if the
+   * admin doesn't pick an owner. */
+  ownerId?: number;
+}
+
+/** A selectable person, resolved from the site's user list for the Owner picker. */
+export interface IPersonOption {
+  id: number;
+  loginName: string;
+  displayName: string;
+  email: string;
 }
 
 export class SopService {
@@ -367,11 +382,12 @@ export class SopService {
    */
   public async uploadDocument(params: IUploadDocumentParams): Promise<void> {
     const listTitle = this._config.libraryName;
-    const [roleField, processField, documentTypeField, statusField] = await Promise.all([
+    const [roleField, processField, documentTypeField, statusField, ownerField] = await Promise.all([
       this._resolveFieldName(listTitle, DISPLAY_NAMES.ROLE_CHOICE, FIELDS.ROLE_CHOICE),
       this._resolveFieldName(listTitle, "Process", FIELDS.LIB_PROCESS),
       this._resolveFieldName(listTitle, DISPLAY_NAMES.DOCUMENT_TYPE, FIELDS.DOCUMENT_TYPE),
       this._resolveFieldName(listTitle, DISPLAY_NAMES.LIB_STATUS, FIELDS.LIB_STATUS),
+      this._resolveFieldName(listTitle, DISPLAY_NAMES.LIB_OWNER, FIELDS.LIB_OWNER),
     ]);
 
     const library = this._sp.web.lists.getByTitle(listTitle);
@@ -390,12 +406,19 @@ export class SopService {
       .getFileByServerRelativePath(uploaded.ServerRelativeUrl)
       .getItem();
 
-    await item.update({
+    const updateProps: Record<string, unknown> = {
       [roleField]: params.role,
       [`${processField}Id`]: params.processId,
       [documentTypeField]: params.documentType,
       [statusField]: params.status,
-    });
+    };
+    // Owner is a Person column — only stamp it if the admin actually picked
+    // someone, using the "<InternalName>Id" convention Person/Lookup columns
+    // require for writes.
+    if (params.ownerId) {
+      updateProps[`${ownerField}Id`] = params.ownerId;
+    }
+    await item.update(updateProps);
 
     // Derive the file's absolute URL from the configured site URL's origin
     // plus the upload's server-relative path (ServerRelativeUrl is always
@@ -418,6 +441,66 @@ export class SopService {
       await processItem.update({
         [documentLinkField]: { Url: fileUrl, Description: params.fileName },
       });
+    }
+  }
+
+  /**
+   * Searches the site's existing users for the Owner people-picker, matching
+   * a typed query against display name or email (case-insensitive, substring).
+   * Only matches people already known to this site — SharePoint's own People
+   * Picker control behaves the same way for a lightweight typeahead. If the
+   * person hasn't visited the site yet, use ensurePersonByEmail instead.
+   */
+  public async searchPeople(query: string): Promise<IPersonOption[]> {
+    const q = query.trim().toLowerCase();
+    if (!q) return [];
+
+    try {
+      const users = await this._sp.web.siteUsers
+        .select("Id", "Title", "Email", "LoginName", "PrincipalType", "IsHiddenInUI")
+        .top(5000)();
+
+      return users
+        .filter((u: any) => u.PrincipalType === 1 && !u.IsHiddenInUI)
+        .filter(
+          (u: any) =>
+            (u.Title || "").toLowerCase().indexOf(q) !== -1 ||
+            (u.Email || "").toLowerCase().indexOf(q) !== -1
+        )
+        .slice(0, 8)
+        .map((u: any) => ({
+          id: u.Id,
+          loginName: u.LoginName,
+          displayName: u.Title,
+          email: u.Email || "",
+        }));
+    } catch (err) {
+      console.error("[SopService] Failed to search site users:", err);
+      return [];
+    }
+  }
+
+  /**
+   * Resolves (and, if needed, provisions) a site user by email/UPN. Used as
+   * a fallback when the desired Owner doesn't appear in searchPeople because
+   * they've never visited this site — SharePoint's ensureUser adds them as a
+   * site user (still subject to normal permissions) and returns their Id.
+   */
+  public async ensurePersonByEmail(email: string): Promise<IPersonOption | null> {
+    const trimmed = email.trim();
+    if (!trimmed) return null;
+
+    try {
+      const result = await this._sp.web.ensureUser(trimmed);
+      return {
+        id: result.Id,
+        loginName: result.LoginName,
+        displayName: result.Title || trimmed,
+        email: result.Email || trimmed,
+      };
+    } catch (err) {
+      console.error("[SopService] Failed to resolve user by email:", err);
+      return null;
     }
   }
 }

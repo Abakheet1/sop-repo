@@ -7,6 +7,10 @@ import {
   DefaultButton,
   Stack,
   Text,
+  TextField,
+  IconButton,
+  Persona,
+  PersonaSize,
   Dropdown,
   IDropdownOption,
   MessageBar,
@@ -15,7 +19,7 @@ import {
   SpinnerSize,
 } from "@fluentui/react";
 import { IProcessViewModel } from "../../models/IProcessViewModel";
-import { SopService } from "../../services/SopService";
+import { SopService, IPersonOption } from "../../services/SopService";
 import styles from "./UploadDocumentDialog.module.scss";
 
 export interface IUploadDocumentDialogProps {
@@ -57,6 +61,60 @@ export const UploadDocumentDialog: React.FC<IUploadDocumentDialogProps> = ({
   const [error, setError] = React.useState<string | null>(null);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
+  // Owner (Person) picker state — a lightweight typeahead against existing
+  // site users, with a fallback to add someone by email if they've never
+  // visited the site yet.
+  const [ownerQuery, setOwnerQuery] = React.useState<string>("");
+  const [ownerSuggestions, setOwnerSuggestions] = React.useState<IPersonOption[]>([]);
+  const [selectedOwner, setSelectedOwner] = React.useState<IPersonOption | null>(null);
+  const [isSearchingOwner, setIsSearchingOwner] = React.useState<boolean>(false);
+  const [isResolvingOwner, setIsResolvingOwner] = React.useState<boolean>(false);
+  const ownerSearchTimer = React.useRef<number | undefined>(undefined);
+
+  // Debounced owner search — waits for the admin to pause typing before
+  // querying the site's user list, avoiding a request on every keystroke.
+  React.useEffect(() => {
+    if (ownerSearchTimer.current) {
+      window.clearTimeout(ownerSearchTimer.current);
+    }
+    const query = ownerQuery.trim();
+    if (!query || !service) {
+      setOwnerSuggestions([]);
+      return;
+    }
+    setIsSearchingOwner(true);
+    ownerSearchTimer.current = window.setTimeout(() => {
+      service
+        .searchPeople(query)
+        .then((results) => setOwnerSuggestions(results))
+        .catch(() => setOwnerSuggestions([]))
+        .finally(() => setIsSearchingOwner(false));
+    }, 300);
+    return () => {
+      if (ownerSearchTimer.current) {
+        window.clearTimeout(ownerSearchTimer.current);
+      }
+    };
+  }, [ownerQuery, service]);
+
+  const handleAddOwnerByEmail = async (): Promise<void> => {
+    const email = ownerQuery.trim();
+    if (!email || !service) return;
+    setIsResolvingOwner(true);
+    try {
+      const person = await service.ensurePersonByEmail(email);
+      if (person) {
+        setSelectedOwner(person);
+        setOwnerQuery("");
+        setOwnerSuggestions([]);
+      } else {
+        setError(`Could not find or add a user matching "${email}".`);
+      }
+    } finally {
+      setIsResolvingOwner(false);
+    }
+  };
+
   // Reset the form each time a new process is targeted, and default the
   // Document Type to whichever type this process is still missing (a
   // documented process with only an SOP most likely needs a Job Description
@@ -66,6 +124,9 @@ export const UploadDocumentDialog: React.FC<IUploadDocumentDialogProps> = ({
     setFile(null);
     setError(null);
     setIsUploading(false);
+    setOwnerQuery("");
+    setOwnerSuggestions([]);
+    setSelectedOwner(null);
     const hasSop = process.matchedDocuments.some((d) => d.documentType === "SOP");
     const hasJd = process.matchedDocuments.some((d) => d.documentType === "Job Description");
     setDocumentType(!hasSop ? "SOP" : !hasJd ? "Job Description" : "SOP");
@@ -89,6 +150,7 @@ export const UploadDocumentDialog: React.FC<IUploadDocumentDialogProps> = ({
         processId: process.id,
         documentType,
         status,
+        ownerId: selectedOwner?.id,
       });
       onUploaded();
     } catch (err) {
@@ -139,6 +201,65 @@ export const UploadDocumentDialog: React.FC<IUploadDocumentDialogProps> = ({
           onChange={(_, option) => option && setStatus(String(option.key))}
           disabled={isUploading}
         />
+
+        <Stack tokens={{ childrenGap: 4 }}>
+          <Text variant="small" className={styles.fileLabel}>Owner</Text>
+          {selectedOwner ? (
+            <Stack horizontal verticalAlign="center" horizontalAlign="space-between" className={styles.contextBox}>
+              <Persona
+                text={selectedOwner.displayName}
+                secondaryText={selectedOwner.email}
+                size={PersonaSize.size32}
+              />
+              <IconButton
+                iconProps={{ iconName: "Cancel" }}
+                title="Clear owner"
+                ariaLabel="Clear owner"
+                onClick={() => setSelectedOwner(null)}
+                disabled={isUploading}
+              />
+            </Stack>
+          ) : (
+            <>
+              <TextField
+                placeholder="Search by name or email..."
+                value={ownerQuery}
+                onChange={(_, value) => setOwnerQuery(value || "")}
+                disabled={isUploading}
+              />
+              {isSearchingOwner && (
+                <Spinner size={SpinnerSize.xSmall} label="Searching..." labelPosition="right" />
+              )}
+              {!isSearchingOwner && ownerSuggestions.length > 0 && (
+                <Stack className={styles.contextBox} tokens={{ childrenGap: 2 }}>
+                  {ownerSuggestions.map((p) => (
+                    <DefaultButton
+                      key={p.id}
+                      text={`${p.displayName}${p.email ? ` (${p.email})` : ""}`}
+                      onClick={() => {
+                        setSelectedOwner(p);
+                        setOwnerQuery("");
+                        setOwnerSuggestions([]);
+                      }}
+                      styles={{ root: { justifyContent: "flex-start", border: "none" } }}
+                    />
+                  ))}
+                </Stack>
+              )}
+              {!isSearchingOwner &&
+                ownerQuery.trim().length > 0 &&
+                ownerSuggestions.length === 0 &&
+                ownerQuery.indexOf("@") !== -1 && (
+                  <DefaultButton
+                    text={isResolvingOwner ? "Adding..." : `Add "${ownerQuery.trim()}" as owner`}
+                    iconProps={{ iconName: "AddFriend" }}
+                    onClick={() => void handleAddOwnerByEmail()}
+                    disabled={isResolvingOwner || isUploading}
+                  />
+                )}
+            </>
+          )}
+        </Stack>
 
         <Stack tokens={{ childrenGap: 6 }}>
           <Text variant="small" className={styles.fileLabel}>File</Text>
