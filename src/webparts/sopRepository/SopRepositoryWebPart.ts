@@ -18,6 +18,7 @@ export interface ISopRepositoryWebPartProps {
   libraryName: string;
   processListName: string;
   rolesListName: string;
+  adminListName: string;
   showGaps: boolean;
   defaultRole: string;
 }
@@ -36,6 +37,7 @@ export default class SopRepositoryWebPart extends BaseClientSideWebPart<ISopRepo
       libraryName: this.properties.libraryName || "SOP & Process Library",
       processListName: this.properties.processListName || "Process",
       rolesListName: this.properties.rolesListName || "Roles",
+      adminListName: this.properties.adminListName || "Admin Access",
     });
   }
 
@@ -99,6 +101,12 @@ export default class SopRepositoryWebPart extends BaseClientSideWebPart<ISopRepo
                 PropertyPaneTextField("rolesListName", {
                   label: strings.RolesListNameLabel,
                   placeholder: "Roles",
+                }),
+                PropertyPaneTextField("adminListName", {
+                  label: strings.AdminListNameLabel,
+                  description:
+                    "List used to gate the document upload feature. Users listed here with Access Level 'Admin' see an Upload button on each process.",
+                  placeholder: "Admin Access",
                 }),
               ],
             },

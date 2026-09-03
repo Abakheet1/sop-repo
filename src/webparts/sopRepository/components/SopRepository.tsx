@@ -21,8 +21,10 @@ import { SummaryBar } from "./SummaryBar/SummaryBar";
 import { SopCard } from "./SopCard/SopCard";
 import { GapCard } from "./GapCard/GapCard";
 import { DocumentPreviewPanel } from "./DocumentPreviewPanel/DocumentPreviewPanel";
+import { UploadDocumentDialog } from "./UploadDocumentDialog/UploadDocumentDialog";
 import { useCurrentUserRole } from "../hooks/useCurrentUserRole";
 import { useSopData } from "../hooks/useSopData";
+import { useIsAdmin } from "../hooks/useIsAdmin";
 import { IProcessViewModel } from "../models/IProcessViewModel";
 import { ISopDocument } from "../models/ISopDocument";
 import styles from "./SopRepository.module.scss";
@@ -35,6 +37,10 @@ export const SopRepository: React.FC<ISopRepositoryProps> = (props) => {
 
   // Detect current user's role from Graph
   const { jobTitle, isLoading: roleLoading } = useCurrentUserRole(context);
+
+  // Whether the signed-in user is listed in the Admin Access list — gates
+  // the document upload feature visible on each process card.
+  const { isAdmin } = useIsAdmin(context, service);
 
   // Selected role state — start with defaultRole override, then auto-detect, then null
   const [selectedRole, setSelectedRole] = useState<string | null>(
@@ -55,6 +61,9 @@ export const SopRepository: React.FC<ISopRepositoryProps> = (props) => {
   // Document selected for in-page preview (opens DocumentPreviewPanel)
   const [selectedDocument, setSelectedDocument] = useState<ISopDocument | null>(null);
 
+  // Process currently targeted by the admin upload dialog (null = dialog closed)
+  const [uploadTarget, setUploadTarget] = useState<IProcessViewModel | null>(null);
+
   // Load SOP data for selected role
   const {
     roles,
@@ -64,6 +73,7 @@ export const SopRepository: React.FC<ISopRepositoryProps> = (props) => {
     jobDescriptions,
     isLoading: dataLoading,
     error,
+    reload,
   } = useSopData(service, selectedRole);
 
   // When Graph returns a job title and no manual override is set, auto-select it.
@@ -293,7 +303,13 @@ export const SopRepository: React.FC<ISopRepositoryProps> = (props) => {
                 </Text>
               ) : (
                 filteredDocumented.map((p) => (
-                  <SopCard key={p.id} process={p} onSelectDocument={setSelectedDocument} />
+                  <SopCard
+                    key={p.id}
+                    process={p}
+                    onSelectDocument={setSelectedDocument}
+                    isAdmin={isAdmin}
+                    onUpload={setUploadTarget}
+                  />
                 ))
               )}
 
@@ -311,7 +327,9 @@ export const SopRepository: React.FC<ISopRepositoryProps> = (props) => {
                         : "All processes are documented for this role."}
                     </Text>
                   ) : (
-                    filteredGaps.map((p) => <GapCard key={p.id} process={p} />)
+                    filteredGaps.map((p) => (
+                      <GapCard key={p.id} process={p} isAdmin={isAdmin} onUpload={setUploadTarget} />
+                    ))
                   )}
                 </>
               )}
@@ -322,6 +340,18 @@ export const SopRepository: React.FC<ISopRepositoryProps> = (props) => {
 
       {/* In-page document preview */}
       <DocumentPreviewPanel document={selectedDocument} onDismiss={() => setSelectedDocument(null)} />
+
+      {/* Admin-only document upload dialog */}
+      <UploadDocumentDialog
+        isOpen={!!uploadTarget}
+        process={uploadTarget}
+        service={service}
+        onDismiss={() => setUploadTarget(null)}
+        onUploaded={() => {
+          setUploadTarget(null);
+          reload();
+        }}
+      />
     </div>
   );
 };

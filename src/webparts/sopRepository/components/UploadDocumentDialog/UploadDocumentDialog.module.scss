@@ -1,0 +1,25 @@
+.contextBox {
+  background: #f3f9fd;
+  border: 1px solid #deecf9;
+  border-radius: 4px;
+  padding: 10px 12px;
+}
+
+.contextLabel {
+  color: #605e5c;
+  font-weight: 600;
+  min-width: 56px;
+}
+
+.contextValue {
+  color: #201f1e;
+}
+
+.fileLabel {
+  font-weight: 600;
+  color: #201f1e;
+}
+
+.hiddenInput {
+  display: none;
+}

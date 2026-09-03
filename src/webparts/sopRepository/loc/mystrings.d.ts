@@ -6,6 +6,7 @@ declare interface ISopRepositoryWebPartStrings {
   LibraryNameLabel: string;
   ProcessListNameLabel: string;
   RolesListNameLabel: string;
+  AdminListNameLabel: string;
   ShowGapsLabel: string;
   DefaultRoleLabel: string;
   LoadingLabel: string;

@@ -1,10 +1,11 @@
 
 require("./GapCard.module.css");
 const styles = {
-  card: 'card_1014c1c5',
-  warnIcon: 'warnIcon_1014c1c5',
-  title: 'title_1014c1c5',
-  subtitle: 'subtitle_1014c1c5'
+  card: 'card_c3088c5f',
+  warnIcon: 'warnIcon_c3088c5f',
+  title: 'title_c3088c5f',
+  subtitle: 'subtitle_c3088c5f',
+  uploadBtn: 'uploadBtn_c3088c5f'
 };
 
 export default styles;

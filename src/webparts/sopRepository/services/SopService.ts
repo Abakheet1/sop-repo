@@ -57,6 +57,22 @@ export interface ISopServiceConfig {
   libraryName: string;
   processListName: string;
   rolesListName: string;
+  /** List that gates the document-upload feature to specific signed-in users */
+  adminListName: string;
+}
+
+/** Parameters accepted by SopService.uploadDocument */
+export interface IUploadDocumentParams {
+  file: File | Blob;
+  fileName: string;
+  /** "Role (Choice)" value to stamp on the uploaded document — normally the
+   * role already recorded on the target Process record, so it always matches
+   * exactly (avoids introducing a new case/whitespace mismatch). */
+  role: string;
+  /** Process list item ID the document should be linked to */
+  processId: number;
+  documentType: string;
+  status: string;
 }
 
 export class SopService {
@@ -261,5 +277,110 @@ export class SopService {
         modified: item.Modified || "",
         fileUrl: item[FIELDS.LIB_ENCODED_ABS_URL] || item[FIELDS.LIB_FILE_REF] || "",
       }));
+  }
+
+  /**
+   * Checks whether the given user (matched by UPN/email, case-insensitively)
+   * is listed in the Admin Access list with an Access Level of "Admin". Gates
+   * the document upload feature. Fails closed — any lookup error, missing
+   * configuration, or no match results in false, never true, so a transient
+   * error can never accidentally grant upload access.
+   */
+  public async isAdmin(userPrincipalName: string): Promise<boolean> {
+    const listTitle = this._config.adminListName;
+    if (!userPrincipalName || !listTitle) return false;
+
+    try {
+      const [upnField, accessField] = await Promise.all([
+        this._resolveFieldName(listTitle, "UserPrincipalName", "UserPrincipalName"),
+        this._resolveFieldName(listTitle, "AccessLevel", "AccessLevel"),
+      ]);
+
+      const items = await this._sp.web
+        .lists.getByTitle(listTitle)
+        .items.select("ID", upnField, accessField)
+        .top(2000)();
+
+      const target = userPrincipalName.trim().toLowerCase();
+      return items.some((item: any) => {
+        const upn = String(item[upnField] || "").trim().toLowerCase();
+        if (upn !== target) return false;
+        const rawAccess = item[accessField];
+        const access =
+          typeof rawAccess === "string"
+            ? rawAccess
+            : (rawAccess as { results?: string[] })?.results?.[0] || "";
+        return access.trim().toLowerCase() === "admin";
+      });
+    } catch (err) {
+      console.error("[SopService] Failed to verify admin access:", err);
+      return false;
+    }
+  }
+
+  /**
+   * Uploads a document to the SOP & Process Library and automatically
+   * populates its metadata (Role (Choice), Process lookup, Document Type,
+   * Status) so an admin never has to manually fill in the library columns
+   * after uploading. If the target Process record's "Document Link" column
+   * is currently blank (i.e. it's an undocumented process), also stamps that
+   * column with a link to the newly uploaded file so the process is
+   * immediately recognized as documented — existing curated links on
+   * already-documented processes are left untouched.
+   */
+  public async uploadDocument(params: IUploadDocumentParams): Promise<void> {
+    const listTitle = this._config.libraryName;
+    const [roleField, processField, documentTypeField, statusField] = await Promise.all([
+      this._resolveFieldName(listTitle, DISPLAY_NAMES.ROLE_CHOICE, FIELDS.ROLE_CHOICE),
+      this._resolveFieldName(listTitle, "Process", FIELDS.LIB_PROCESS),
+      this._resolveFieldName(listTitle, DISPLAY_NAMES.DOCUMENT_TYPE, FIELDS.DOCUMENT_TYPE),
+      this._resolveFieldName(listTitle, DISPLAY_NAMES.LIB_STATUS, FIELDS.LIB_STATUS),
+    ]);
+
+    const library = this._sp.web.lists.getByTitle(listTitle);
+    const rootFolder = await library.rootFolder();
+
+    // Upload the file into the library's root folder. addUsingPath handles
+    // both small and large files without requiring a separate chunked-upload
+    // code path for this use case (admin-uploaded SOP/JD documents).
+    const uploaded = await this._sp.web
+      .getFolderByServerRelativePath(rootFolder.ServerRelativeUrl)
+      .files.addUsingPath(params.fileName, params.file, { Overwrite: false });
+
+    // Re-fetch the file as a queryable object so we can get its associated
+    // list item and set metadata on it.
+    const item = await this._sp.web
+      .getFileByServerRelativePath(uploaded.ServerRelativeUrl)
+      .getItem();
+
+    await item.update({
+      [roleField]: params.role,
+      [`${processField}Id`]: params.processId,
+      [documentTypeField]: params.documentType,
+      [statusField]: params.status,
+    });
+
+    // Derive the file's absolute URL from the configured site URL's origin
+    // plus the upload's server-relative path (ServerRelativeUrl is always
+    // rooted at the site collection, so this is reliable regardless of which
+    // web the library lives in).
+    const origin = new URL(this._config.sopSiteUrl).origin;
+    const fileUrl = `${origin}${uploaded.ServerRelativeUrl}`;
+
+    const processListTitle = this._config.processListName;
+    const documentLinkField = await this._resolveFieldName(
+      processListTitle,
+      DISPLAY_NAMES.DOCUMENT_LINK,
+      FIELDS.DOCUMENT_LINK
+    );
+    const processItem = this._sp.web.lists.getByTitle(processListTitle).items.getById(params.processId);
+
+    const current: any = await processItem.select(documentLinkField)();
+    const hasExistingLink = !!(current[documentLinkField]?.Url || current[documentLinkField]);
+    if (!hasExistingLink) {
+      await processItem.update({
+        [documentLinkField]: { Url: fileUrl, Description: params.fileName },
+      });
+    }
   }
 }

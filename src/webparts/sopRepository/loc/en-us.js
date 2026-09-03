@@ -7,6 +7,7 @@ define([], function () {
     LibraryNameLabel: "Document Library Name",
     ProcessListNameLabel: "Process List Name",
     RolesListNameLabel: "Roles List Name",
+    AdminListNameLabel: "Admin Access List Name",
     ShowGapsLabel: "Show Undocumented Processes",
     DefaultRoleLabel: "Default Role Override",
     LoadingLabel: "Loading documentation...",

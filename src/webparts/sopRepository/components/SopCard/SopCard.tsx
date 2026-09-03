@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Stack, Text, Link, Icon, TooltipHost } from "@fluentui/react";
+import { Stack, Text, Link, Icon, TooltipHost, ActionButton } from "@fluentui/react";
 import { IProcessViewModel } from "../../models/IProcessViewModel";
 import { ISopDocument } from "../../models/ISopDocument";
 import styles from "./SopCard.module.scss";
@@ -8,6 +8,10 @@ export interface ISopCardProps {
   process: IProcessViewModel;
   /** Opens the in-page document preview panel instead of a new browser tab */
   onSelectDocument?: (doc: ISopDocument) => void;
+  /** Shows the Add Document button when true (current user is a verified admin) */
+  isAdmin?: boolean;
+  /** Opens the upload dialog for this process */
+  onUpload?: (process: IProcessViewModel) => void;
 }
 
 /** The date actually shown to the user: the manually-curated Review Date when
@@ -17,7 +21,7 @@ function getDisplayDate(doc: ISopDocument): string {
   return doc.reviewDate || doc.modified || "";
 }
 
-export const SopCard: React.FC<ISopCardProps> = ({ process, onSelectDocument }) => {
+export const SopCard: React.FC<ISopCardProps> = ({ process, onSelectDocument, isAdmin, onUpload }) => {
   const sopDocs = process.matchedDocuments.filter((d) => d.documentType === "SOP");
   const jdDocs = process.matchedDocuments.filter((d) => d.documentType === "Job Description");
 
@@ -30,11 +34,22 @@ export const SopCard: React.FC<ISopCardProps> = ({ process, onSelectDocument }) 
   return (
     <div className={styles.card}>
       <Stack tokens={{ childrenGap: 6 }}>
-        <Stack horizontal verticalAlign="center" tokens={{ childrenGap: 8 }}>
-          <Icon iconName="DocumentSet" className={styles.docIcon} />
-          <Text variant="mediumPlus" className={styles.title}>
-            {process.processTitle}
-          </Text>
+        <Stack horizontal verticalAlign="center" horizontalAlign="space-between" tokens={{ childrenGap: 8 }}>
+          <Stack horizontal verticalAlign="center" tokens={{ childrenGap: 8 }}>
+            <Icon iconName="DocumentSet" className={styles.docIcon} />
+            <Text variant="mediumPlus" className={styles.title}>
+              {process.processTitle}
+            </Text>
+          </Stack>
+          {isAdmin && onUpload && (
+            <ActionButton
+              iconProps={{ iconName: "Upload" }}
+              onClick={() => onUpload(process)}
+              className={styles.uploadBtn}
+            >
+              Add Document
+            </ActionButton>
+          )}
         </Stack>
 
         {/* Direct document link from Process list */}
