@@ -1,0 +1,18 @@
+Fix layout squeeze in narrow SharePoint page columns (flex-wrap over media query)
+
+The sidebar/content layout only stacked via @media (max-width: 768px),
+but media queries react to the browser's viewport width, not the actual
+width of the web part's container. When the web part is placed in a
+narrow SharePoint page column/zone while the browser viewport stays
+wide, that breakpoint never fires, so the fixed 280px sidebar plus
+flex:1 content column got squeezed into whatever sliver of space was
+left in the zone -- producing a near-zero-width content column where
+text wrapped one character per line.
+
+Switched to flex-wrap with sensible flex-basis/min-width on both
+columns so they respond to the container's real available width and
+wrap onto separate rows automatically, regardless of viewport size.
+Also bumped the solution version to 1.2.0.0 so it's easy to confirm
+which build is deployed to the App Catalog.
+
+Co-authored-by: Copilot App <223556219+Copilot@users.noreply.github.com>

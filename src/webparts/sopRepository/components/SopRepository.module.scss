@@ -24,11 +24,20 @@
 
 .layout {
   align-items: flex-start;
+  // flex-wrap (not a media query) is what actually makes this responsive:
+  // media queries only react to the browser's viewport width, but this web
+  // part can be placed in a narrow SharePoint page column/zone while the
+  // viewport itself stays wide — in that case a media query never fires and
+  // the fixed-width sidebar + flex:1 content get squeezed into whatever
+  // sliver of the zone is left. Wrapping based on each column's own
+  // flex-basis/min-width reacts to the container's real width instead.
+  flex-wrap: wrap;
 }
 
 .sidebar {
-  width: 280px;
-  flex: 0 0 280px;
+  flex: 1 1 280px;
+  max-width: 280px;
+  min-width: 240px;
   position: sticky;
   top: 12px;
   background: #faf9f8;
@@ -47,11 +56,16 @@
 }
 
 .content {
-  flex: 1;
-  min-width: 0;
+  flex: 3 1 320px;
+  min-width: 280px;
   padding-top: 2px;
 }
 
+// Narrow zones (e.g. a web part placed in a narrow SharePoint page column)
+// wrap the sidebar onto its own row via flex-wrap above; when that happens,
+// let it use the full row width instead of staying pinned to 280px, and
+// drop the sticky positioning since "sticky within a narrow column above
+// the content" isn't useful once they're stacked.
 @media (max-width: 768px) {
   .container {
     padding: 16px;
@@ -63,6 +77,7 @@
 
   .sidebar {
     width: 100%;
+    max-width: 100%;
     flex: 1 1 auto;
     position: static;
   }

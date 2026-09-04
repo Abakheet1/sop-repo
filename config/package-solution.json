@@ -3,7 +3,7 @@
   "solution": {
     "name": "role-responsibility-documentation-client-side-solution",
     "id": "ed3767e9-6819-453c-b8c1-b979758b0084",
-    "version": "1.1.0.0",
+    "version": "1.2.0.0",
     "includeClientSideAssets": true,
     "skipFeatureDeployment": true,
     "isDomainIsolated": false,
@@ -30,7 +30,7 @@
         "title": "Role & Responsibility Documentation Feature",
         "description": "The feature that activates elements for the Role & Responsibility Documentation web part.",
         "id": "b18b5702-368b-4646-b4c5-fe47ebda42d3",
-        "version": "1.1.0.0"
+        "version": "1.2.0.0"
       }
     ]
   },

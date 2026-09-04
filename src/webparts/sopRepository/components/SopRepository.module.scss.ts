@@ -1,22 +1,22 @@
 
 require("./SopRepository.module.css");
 const styles = {
-  container: 'container_d081c2d8',
-  header: 'header_d081c2d8',
-  headerIcon: 'headerIcon_d081c2d8',
-  headerDivider: 'headerDivider_d081c2d8',
-  layout: 'layout_d081c2d8',
-  sidebar: 'sidebar_d081c2d8',
-  filterGroup: 'filterGroup_d081c2d8',
-  filterDivider: 'filterDivider_d081c2d8',
-  content: 'content_d081c2d8',
-  search: 'search_d081c2d8',
-  sectionHeader: 'sectionHeader_d081c2d8',
-  gapHeader: 'gapHeader_d081c2d8',
-  gapHeaderIcon: 'gapHeaderIcon_d081c2d8',
-  separator: 'separator_d081c2d8',
-  emptyState: 'emptyState_d081c2d8',
-  clearFiltersBtn: 'clearFiltersBtn_d081c2d8'
+  container: 'container_11189fb5',
+  header: 'header_11189fb5',
+  headerIcon: 'headerIcon_11189fb5',
+  headerDivider: 'headerDivider_11189fb5',
+  layout: 'layout_11189fb5',
+  sidebar: 'sidebar_11189fb5',
+  filterGroup: 'filterGroup_11189fb5',
+  filterDivider: 'filterDivider_11189fb5',
+  content: 'content_11189fb5',
+  search: 'search_11189fb5',
+  sectionHeader: 'sectionHeader_11189fb5',
+  gapHeader: 'gapHeader_11189fb5',
+  gapHeaderIcon: 'gapHeaderIcon_11189fb5',
+  separator: 'separator_11189fb5',
+  emptyState: 'emptyState_11189fb5',
+  clearFiltersBtn: 'clearFiltersBtn_11189fb5'
 };
 
 export default styles;
