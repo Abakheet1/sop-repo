@@ -409,13 +409,35 @@ export class SopService {
 
     const library = this._sp.web.lists.getByTitle(listTitle);
     const rootFolder = await library.rootFolder();
+    const folder = this._sp.web.getFolderByServerRelativePath(rootFolder.ServerRelativeUrl);
 
     // Upload the file into the library's root folder. addUsingPath handles
     // both small and large files without requiring a separate chunked-upload
-    // code path for this use case (admin-uploaded SOP/JD documents).
-    const uploaded = await this._sp.web
-      .getFolderByServerRelativePath(rootFolder.ServerRelativeUrl)
-      .files.addUsingPath(params.fileName, params.file, { Overwrite: false });
+    // code path for this use case (admin-uploaded SOP/JD documents). If a
+    // file with the same name already exists (e.g. someone previously
+    // uploaded a same-named SOP), auto-uniquify the name (" (2)", " (3)", ...)
+    // instead of failing outright or silently overwriting someone else's file.
+    let uploadName = params.fileName;
+    let uploaded;
+    const dotIndex = params.fileName.lastIndexOf(".");
+    const baseName = dotIndex > 0 ? params.fileName.slice(0, dotIndex) : params.fileName;
+    const extension = dotIndex > 0 ? params.fileName.slice(dotIndex) : "";
+    for (let attempt = 0; attempt < 25; attempt++) {
+      try {
+        uploaded = await folder.files.addUsingPath(uploadName, params.file, { Overwrite: false });
+        break;
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        const isDuplicate = message.indexOf("-2130575257") !== -1 || message.indexOf("already exists") !== -1;
+        if (!isDuplicate || attempt === 24) {
+          throw err;
+        }
+        uploadName = `${baseName} (${attempt + 2})${extension}`;
+      }
+    }
+    if (!uploaded) {
+      throw new Error(`Unable to find an available file name for "${params.fileName}".`);
+    }
 
     // Re-fetch the file as a queryable object so we can get its associated
     // list item and set metadata on it.
