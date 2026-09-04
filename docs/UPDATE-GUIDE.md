@@ -17,9 +17,12 @@ notes where the two differ.
   `>=20.11.0 <21.0.0` (PR #1) — see `package.json` → `engines`.
 - npm (comes with Node).
 - Git.
-- Access to the target SharePoint tenant's App Catalog
-  (`communityessentials.sharepoint.com`) with permission to upload/deploy
-  packages.
+- **Membership access to the client's App Catalog site** (a dedicated site
+  collection under the tenant, e.g. `<Client Name> SharePoint App` — see
+  section 7 below). This is granted per-client via that site's
+  **Membership** tab, not tenant-wide, so confirm your dev/deployment
+  account has been added there before your first deployment for a new
+  client.
 - Recommended: SharePoint Online Management Shell or admin center access for
   tenant-wide deployment/permissions management.
 
@@ -155,21 +158,34 @@ deploy without a local build) along with any source changes.
 
 ## 7. Deploying to SharePoint
 
-1. Go to the tenant or site collection **App Catalog** on
-   `communityessentials.sharepoint.com`.
-2. Upload/replace the appropriate `.sppkg` from `sharepoint/solution/`.
-3. If prompted, choose **Replace** the existing app version, and check
+Each client has its **own App Catalog site** (a dedicated site collection,
+not a single shared tenant-wide catalog) — e.g. the Village of Mundelein's
+is named `Mundelein SharePoint App`. Confirm you're using the correct
+client's App Catalog site before uploading.
+
+1. **Check permissions first (especially for a new client or new
+   deployment account):** go to the client's App Catalog site → gear icon
+   → **Site permissions** (or **Site contents → Settings**) → **Membership**
+   tab. Confirm your dev/deployment account is listed as at least a
+   **Member** (able to upload/manage apps). If it isn't, add it there before
+   continuing — without this, the app upload will fail or the account won't
+   see the App Catalog at all.
+2. Go to that client's **App Catalog** site (e.g.
+   `communityessentials.sharepoint.com` hosts each client's catalog as its
+   own site collection).
+3. Upload/replace the appropriate `.sppkg` from `sharepoint/solution/`.
+4. If prompted, choose **Replace** the existing app version, and check
    "Make this solution available to all sites in the organization" only if
    that matches current distribution intent.
-4. Both branches set `skipFeatureDeployment: true`, so the app deploys
+5. Both branches set `skipFeatureDeployment: true`, so the app deploys
    tenant-wide automatically without a manual per-site feature-activation
    step — existing pages using the web part pick up the new version
    automatically (may take a few minutes / a page refresh).
-5. If this is a first-time install on a new site, add the web part to a
+6. If this is a first-time install on a new site, add the web part to a
    page from the web part picker, then configure the property pane
    (`sopSiteUrl`, `libraryName`, `processListName`, `rolesListName`, and —
    on the PR #1 build — `adminListName`).
-6. If deploying the PR #1 build, also create the **Admin Access** list on
+7. If deploying the PR #1 build, also create the **Admin Access** list on
    the target site (Person column, e.g. `UserPrincipalName`; Choice column
    `AccessLevel` with at least the value `Admin`) before anyone expects the
    Upload button to appear.
@@ -190,4 +206,5 @@ it in the App Catalog if a release causes problems.
 | Upload button never appears (PR #1) | User isn't listed in the Admin Access list with `AccessLevel = Admin`, or `adminListName` is misconfigured | `SopService.isAdmin()`; the configured Admin Access list |
 | Upload fails (PR #1) | Missing library write permission, or a resolved field name that doesn't match the library's schema — note a duplicate file name is *not* a failure cause, it auto-retries with a de-duplicated name | `SopService.uploadDocument()`; browser console error surfaced in the dialog's error banner |
 | Build fails | Wrong Node version, or TypeScript errors from a data-contract change | `package.json` engines; run `gulp build` for the exact TS error |
+| Can't see/upload to the App Catalog | Dev/deployment account isn't added to that client's App Catalog site Membership yet | Client's App Catalog site → **Site permissions → Membership** — add the account as at least a Member |
 | Web part doesn't update after new package upload | Browser/SharePoint cache, or App Catalog didn't propagate yet | Hard refresh; wait a few minutes; confirm version bumped in `package-solution.json` |

@@ -41,7 +41,7 @@ documentation ("Undocumented Processes").
 | Package output (PR #1) | `sharepoint/solution/role-responsibility-documentation.sppkg` |
 | Package output (`main`) | `sharepoint/solution/sop-repository.sppkg` |
 | Owner | Village of Mundelein IT |
-| Tenant | `communityessentials.sharepoint.com` |
+| Tenant | `communityessentials.sharepoint.com` (a multi-client tenant — each client, including Mundelein, has its own App Catalog site, e.g. `Mundelein SharePoint App`) |
 | Repository | https://github.com/JonEricEubanks/sop-repo |
 
 ## 2. How it was built
@@ -195,9 +195,13 @@ property pane — nothing is hard-coded to a single site:
   against the **hosted workbench** on a real SharePoint site (see the Update
   & Maintenance Guide), since the local workbench cannot authenticate PnP.js
   calls to SharePoint.
-- **Production**: the packaged `.sppkg` deployed to the tenant or site
-  collection App Catalog at `communityessentials.sharepoint.com`, then added
-  to the page(s) that host the app.
+- **Production**: the packaged `.sppkg` deployed to the client's App Catalog
+  site (its own dedicated site collection under
+  `communityessentials.sharepoint.com`, e.g. `Mundelein SharePoint App`),
+  then added to the page(s) that host the app. **Before deploying to a new
+  client or with a new deployment account, verify that account is added to
+  that App Catalog site's Membership (at least Member) — see
+  `docs/UPDATE-GUIDE.md` section 7.**
 
 ## 5. Dependencies to track over time
 
