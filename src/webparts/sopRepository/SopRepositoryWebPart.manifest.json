@@ -16,7 +16,7 @@
       "description": { "default": "Find SOPs, policies, and job descriptions for your role and department" },
       "officeFabricIconFontName": "Documentation",
       "properties": {
-        "sopSiteUrl": "https://communityessentials.sharepoint.com/sites/SOPProcessManagement",
+        "sopSiteUrl": "",
         "libraryName": "SOP & Process Library",
         "processListName": "Process",
         "rolesListName": "Roles",

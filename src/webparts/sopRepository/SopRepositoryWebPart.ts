@@ -33,12 +33,22 @@ export default class SopRepositoryWebPart extends BaseClientSideWebPart<ISopRepo
 
   private _initService(): void {
     this._service = new SopService(this.context, {
-      sopSiteUrl: this.properties.sopSiteUrl || "",
+      sopSiteUrl: this._resolveSiteUrl(),
       libraryName: this.properties.libraryName || "SOP & Process Library",
       processListName: this.properties.processListName || "Process",
       rolesListName: this.properties.rolesListName || "Roles",
       adminListName: this.properties.adminListName || "Admin Access",
     });
+  }
+
+  /**
+   * Resolves the site to read SOP data from. Defaults to the CURRENT site
+   * (wherever the web part was added) so it works out of the box on any
+   * site — an admin only needs to fill in "Site URL" in the property pane
+   * if the data actually lives on a *different* site than the page.
+   */
+  private _resolveSiteUrl(): string {
+    return this.properties.sopSiteUrl || this.context.pageContext.web.absoluteUrl;
   }
 
   public render(): void {
@@ -50,7 +60,7 @@ export default class SopRepositoryWebPart extends BaseClientSideWebPart<ISopRepo
       {
         context: this.context,
         service: this._service,
-        sopSiteUrl: this.properties.sopSiteUrl || "",
+        sopSiteUrl: this._resolveSiteUrl(),
         libraryName: this.properties.libraryName || "SOP & Process Library",
         processListName: this.properties.processListName || "Process",
         rolesListName: this.properties.rolesListName || "Roles",
@@ -85,9 +95,8 @@ export default class SopRepositoryWebPart extends BaseClientSideWebPart<ISopRepo
                 PropertyPaneTextField("sopSiteUrl", {
                   label: strings.SopSiteUrlLabel,
                   description:
-                    "Full URL of the site containing the SOP & Process Library, Process list, and Roles list. Example: https://communityessentials.sharepoint.com/sites/SOPProcessManagement",
-                  placeholder:
-                    "https://communityessentials.sharepoint.com/sites/SOPProcessManagement",
+                    "Leave blank to use the current site (recommended). Only fill this in if the SOP & Process Library, Process list, and Roles list actually live on a DIFFERENT site than the one this web part is placed on.",
+                  placeholder: "(current site)",
                   multiline: false,
                 }),
                 PropertyPaneTextField("libraryName", {

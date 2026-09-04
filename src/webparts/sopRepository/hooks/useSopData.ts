@@ -48,10 +48,17 @@ export function useSopData(service: SopService | null, selectedRole: string | nu
     async function loadRoles(): Promise<void> {
       try {
         const result = await service!.getRoles();
-        if (!cancelled) setRoles(result);
+        if (!cancelled) {
+          setRoles(result);
+          setError(null);
+        }
       } catch (err) {
         if (!cancelled) {
           console.error("[SopRepository] Failed to load roles:", err);
+          const detail = err instanceof Error ? err.message : String(err);
+          setError(
+            `Unable to load roles. Verify the Roles list exists and this account has access to it. (${detail})`
+          );
         }
       }
     }
