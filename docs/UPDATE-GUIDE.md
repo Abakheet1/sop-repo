@@ -99,13 +99,17 @@ column is intentionally ignored everywhere (treated as stale data).
 ### Adding or changing the Admin Access / upload feature (PR #1 branch only)
 
 - The gate itself is `SopService.isAdmin()` — it checks the configured
-  `adminListName` list for a row where the Person column matches the
-  signed-in user's email/UPN **and** the Choice column value is exactly
-  `"Admin"`. It fails closed on any error.
-- The upload flow is `SopService.uploadDocument()` — it uploads the file,
-  then stamps Role, Process (lookup), Document Type, Status, and optionally
-  Owner on the new library item, and back-fills the Process record's
-  `Document Link` only if it was previously blank.
+  `adminListName` list for a row where the Person column (`UserPrincipalName`)
+  matches the signed-in user's email/UPN **and** the Choice column
+  (`AccessLevel`) value is exactly `"Admin"` (case-insensitive). It fails
+  closed on any error.
+- The upload flow is `SopService.uploadDocument()` — it uploads the file
+  (auto-retrying with a de-duplicated name like `" (2)"` if a same-named file
+  already exists in the library, rather than failing or overwriting), then
+  stamps `Role (Choice)`, the `Process` lookup, Document Type, Status,
+  optionally `Owner`, and — best-effort — `Role (Lookup)` (matched from the
+  Roles list by name) on the new library item, and back-fills the Process
+  record's `Document Link` only if it was previously blank.
 - If you need a second access level (e.g. "Reviewer"), extend the
   `AccessLevel` comparison in `isAdmin()` — do not just add a second list,
   since `useIsAdmin.ts` is the single hook every component relies on.
@@ -184,6 +188,6 @@ it in the App Catalog if a release causes problems.
 | Processes/documents empty for a role | Internal field name mismatch, or value mismatch (extra whitespace/case) | `SopService.ts` `FIELDS`/`DISPLAY_NAMES`; actual list schema via REST `$select=InternalName,Title` |
 | Everything shows as "Undocumented" | `Document Link` column empty and no library document title matches the process title | `useSopData.ts` join logic; `Document Link` and `Process` (library) values |
 | Upload button never appears (PR #1) | User isn't listed in the Admin Access list with `AccessLevel = Admin`, or `adminListName` is misconfigured | `SopService.isAdmin()`; the configured Admin Access list |
-| Upload fails | File name collision handling, missing library write permission, or a resolved field name that doesn't match the library's schema | `SopService.uploadDocument()`; browser console error surfaced in the dialog's error banner |
+| Upload fails (PR #1) | Missing library write permission, or a resolved field name that doesn't match the library's schema — note a duplicate file name is *not* a failure cause, it auto-retries with a de-duplicated name | `SopService.uploadDocument()`; browser console error surfaced in the dialog's error banner |
 | Build fails | Wrong Node version, or TypeScript errors from a data-contract change | `package.json` engines; run `gulp build` for the exact TS error |
 | Web part doesn't update after new package upload | Browser/SharePoint cache, or App Catalog didn't propagate yet | Hard refresh; wait a few minutes; confirm version bumped in `package-solution.json` |

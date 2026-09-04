@@ -175,10 +175,16 @@ property pane — nothing is hard-coded to a single site:
 8. *(PR #1)* If the signed-in user is a verified admin, each process card
    shows an **Upload Document** button that opens `UploadDocumentDialog`.
    The admin picks a file, Document Type, Status, and optionally an Owner;
-   `SopService.uploadDocument()` uploads the file to the library, stamps its
-   metadata (Role, Process lookup, Document Type, Status, Owner), and — only
-   if the Process record's `Document Link` was previously blank — stamps
-   that link too, so the process is immediately recognized as documented.
+   `SopService.uploadDocument()` uploads the file to the library and stamps
+   its metadata: `Role (Choice)`, the `Process` lookup, Document Type,
+   Status, `Owner` (if picked), and — best-effort — `Role (Lookup)` by
+   matching the role name against the Roles list (skipped if no exact match
+   is found, without failing the rest of the upload). If a file with the
+   same name already exists in the library, the upload automatically
+   retries with a de-duplicated name (`" (2)"`, `" (3)"`, ...) instead of
+   failing or silently overwriting someone else's file. Finally, only if the
+   Process record's `Document Link` was previously blank, that link is
+   stamped too, so the process is immediately recognized as documented.
 9. Property pane changes (site URL, list names, toggles) trigger `render()`
    again, rebuilding the service and refreshing data.
 
