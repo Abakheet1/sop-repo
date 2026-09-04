@@ -115,11 +115,15 @@ When handing this repo to GitHub Copilot or another developer, make sure they kn
 
 ## Documentation
 
-Detailed application documentation lives in `docs/`:
+Detailed internal application documentation lives in `docs/` (this is
+internal/IT-facing material, not client-facing):
 
 - [`docs/APPLICATION-LIFECYCLE.md`](docs/APPLICATION-LIFECYCLE.md) — how the app was built, its architecture, data model, and runtime lifecycle.
-- [`docs/UPDATE-GUIDE.md`](docs/UPDATE-GUIDE.md) — how to make changes, rebuild, package, and deploy updates.
-- [`docs/CLIENT-SHAREPOINT-PAGE.md`](docs/CLIENT-SHAREPOINT-PAGE.md) — content draft and instructions for a client-facing SharePoint page linking staff to this documentation.
+- [`docs/UPDATE-GUIDE.md`](docs/UPDATE-GUIDE.md) — how to clone, make changes, rebuild, package, and deploy updates.
+- [`docs/INTERNAL-SHAREPOINT-PAGE.md`](docs/INTERNAL-SHAREPOINT-PAGE.md) — content draft and instructions for an internal SharePoint page linking IT staff to this documentation.
+- [`docs/word/`](docs/word/) — Word (`.docx`) versions of the above for internal distribution.
+
+Note: `main` reflects the current "SOP Repository" baseline. A pending rebrand to "Role & Responsibility Documentation" with an admin-gated upload feature is in progress on PR #1 (branch `abakheet1-spfx-audit`) — the docs above describe both and call out what's still pending merge.
 
 ## License
 
